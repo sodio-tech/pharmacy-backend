@@ -32,4 +32,5 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             npm i --legacy-peer-deps
-            pm2 restart pharmacy-backend || pm2 start npm --name "pharmacy-backend" -- start
+            npm run build
+            pm2 restart pharmacy-backend || pm2 start dist/index.js --name "pharmacy-backend"

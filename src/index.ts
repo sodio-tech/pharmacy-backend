@@ -32,7 +32,7 @@ const limiter = rateLimit({
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
-  "https://your-production-domain.com",
+  "https://pharmy.sodio.tech",
 ];
 
 // Initialize Express app

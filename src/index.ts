@@ -33,6 +33,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://pharmy.sodio.tech",
+  "https://pharmacy-backend.sodio.tech"
 ];
 
 // Initialize Express app

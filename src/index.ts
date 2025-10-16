@@ -81,10 +81,12 @@ app.get("/api/auth/test", (req, res) => {
   res.json({ message: "Auth route is working", timestamp: new Date().toISOString() });
 });
 
+// app.all("/api/auth/{*splat}", (req, res) => {
+//   return toNodeHandler(auth)(req, res);
+// });
+
 // Better Auth route handler
-app.all("/api/auth/{*splat}", (req, res) => {
-  return toNodeHandler(auth)(req, res);
-});
+app.use("/api/auth", toNodeHandler(auth));
 
 // Body parsing middleware
 app.use(express.json());

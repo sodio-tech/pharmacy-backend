@@ -59,13 +59,32 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods including OPTIONS
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"], // Allowed headers
-    credentials: true, // Allow cookies to be sent
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "Cookie", 
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Request-Method",
+      "Access-Control-Request-Headers"
+    ], 
+    credentials: true, 
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   })
 );
 
-app.all("/api/auth/{*splat}", toNodeHandler(auth));
+// Test route to verify routing is working
+app.get("/api/auth/test", (req, res) => {
+  res.json({ message: "Auth route is working", timestamp: new Date().toISOString() });
+});
+
+// Better Auth route handler
+app.all("/api/auth/{*splat}", (req, res) => {
+  return toNodeHandler(auth)(req, res);
+});
 
 // Body parsing middleware
 app.use(express.json());

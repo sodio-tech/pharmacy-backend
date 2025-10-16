@@ -86,7 +86,7 @@ export const auth = betterAuth({
     enabled: true,
     sendVerificationEmail: async ({ user, url }) => {
       const verificationUrl = new URL(url);
-      verificationUrl.searchParams.set("callbackURL", "http://localhost:3000/email-verification");
+      verificationUrl.searchParams.set("callbackURL", `${process.env.FRONTEND_URL}/email-verification`);
       await sendEmail({
         sendTo: user.email,
         subject: "Verify your email",
@@ -115,7 +115,7 @@ export const auth = betterAuth({
     autoSignIn: true,
     sendResetPassword: async ({ user, url, token }, request) => {
       const resetUrl = new URL(url);
-      resetUrl.searchParams.set("callbackURL", "http://localhost:3000/reset-password");
+      resetUrl.searchParams.set("callbackURL", `${process.env.FRONTEND_URL}/reset-password`);
       await sendEmail({
         sendTo: user.email,
         subject: "Reset your password",
@@ -135,16 +135,6 @@ export const auth = betterAuth({
       });
     },
   },
-  // socialProviders: {
-  //   microsoft: {
-  //     clientId: process.env.MICROSOFT_CLIENT_ID as string,
-  //     clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string,
-  //   },
-  //   google: {
-  //     clientId: process.env.GOOGLE_CLIENT_ID as string,
-  //     clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-  //   }
-  // },
 });
 
 export type User = typeof auth.$Infer.Session.user;

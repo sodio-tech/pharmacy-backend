@@ -54,7 +54,8 @@ app.use(compression());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow all origins for development
+      if (process.env.NODE_ENV === 'development' || !origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

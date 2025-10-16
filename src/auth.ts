@@ -60,6 +60,13 @@ export const auth = betterAuth({
     })
   ],
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:8080",
+  // Disable secure cookie prefix for development
+  advanced: {
+    generateId: () => Math.random().toString(36).substring(2),
+    crossSubDomainCookies: {
+      enabled: false
+    }
+  },
   trustedOrigins: ["http://localhost:3000", "http://localhost:8080", "https://pharmy.sodio.tech","https://pharmacy-backend.sodio.tech"],
   user: {
     additionalFields: {
@@ -76,6 +83,15 @@ export const auth = betterAuth({
     },
     updateAge: 24 * 60 * 60,
     expiresIn: 60 * 60 * 24 * 7,
+    cookieName: "better-auth.session_token",
+    cookieCacheName: "better-auth.session_data",
+    // UNSAFE: Disable all security for development
+    cookieOptions: {
+      secure: false,       // Allow HTTP
+      sameSite: 'lax',    // Allow cross-origin
+      httpOnly: false,    // Allow JavaScript access
+      domain: undefined   // No domain restriction
+    }
   },
   rateLimit: {
     window: 10,

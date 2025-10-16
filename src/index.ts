@@ -83,7 +83,12 @@ app.get("/api/auth/test", (req, res) => {
 });
 
 // Better Auth route handler
-app.all("/api/auth/{*splat}", (req, res) => {
+// app.all("/api/auth/{*splat}", (req, res) => {
+//   return toNodeHandler(auth)(req, res);
+// });
+
+// Catch all Better Auth routes
+app.use('/api/auth', (req, res) => {
   return toNodeHandler(auth)(req, res);
 });
 

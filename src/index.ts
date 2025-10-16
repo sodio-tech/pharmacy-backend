@@ -63,16 +63,16 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
-      "Content-Type", 
-      "Authorization", 
-      "Cookie", 
+      "Content-Type",
+      "Authorization",
+      "Cookie",
       "X-Requested-With",
       "Accept",
       "Origin",
       "Access-Control-Request-Method",
       "Access-Control-Request-Headers"
-    ], 
-    credentials: true, 
+    ],
+    credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204
   })
@@ -84,7 +84,7 @@ app.get("/api/auth/test", (req, res) => {
 });
 
 // Better Auth route handler
-app.all("/api/auth/{*splat}", (req, res) => {
+app.all("/api/auth/{*any}", (req, res) => {
   return toNodeHandler(auth)(req, res);
 });
 

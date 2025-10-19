@@ -59,7 +59,7 @@ export const auth = betterAuth({
       },
     })
   ],
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:8080",
+  baseURL: process.env.BETTER_AUTH_URL as string,
   // Disable secure cookie prefix for development
   advanced: {
     generateId: () => Math.random().toString(36).substring(2),

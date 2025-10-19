@@ -18,6 +18,8 @@ export const auth = betterAuth({
   appName: "Pharmacy Management System",
   database: pool,
   secret: process.env.BETTER_AUTH_SECRET as string,
+  baseURL: process.env.BETTER_AUTH_URL as string,
+
   plugins: [
     twoFactor({
       otpOptions: {
@@ -33,18 +35,15 @@ export const auth = betterAuth({
                     <h2 style="color: #333; margin-bottom: 20px;">Two-Factor Authentication</h2>
                     <p style="color: #666; margin-bottom: 20px;">Hello ${user.name || 'User'},</p>
                     <p style="color: #666; margin-bottom: 30px;">Use the following code to complete your two-factor authentication:</p>
-                    
                     <div style="background-color: #0f766e; color: white; font-size: 32px; font-weight: bold; padding: 20px; border-radius: 8px; letter-spacing: 4px; margin: 20px 0;">
                       ${otp}
                     </div>
-                    
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
                       This code will expire in 10 minutes for security reasons.
                     </p>
-                    
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                       <p style="color: #999; font-size: 12px;">
-                        If you didn't request this code, please ignore this email or contact support if you have concerns.
+                        If you didn't request this code, please ignore this email or contact support.
                       </p>
                     </div>
                   </div>
@@ -52,51 +51,34 @@ export const auth = betterAuth({
               `,
             });
           } catch (error) {
-            console.error('❌ Failed to send OTP email:', error);
+            console.error("❌ Failed to send OTP email:", error);
             throw error;
           }
         },
       },
-    })
+    }),
   ],
-  baseURL: process.env.BETTER_AUTH_URL as string,
-  // Disable secure cookie prefix for development
-  advanced: {
-    generateId: () => Math.random().toString(36).substring(2),
-    crossSubDomainCookies: {
-      enabled: false
-    }
-  },
-  trustedOrigins: ["http://localhost:3000", "http://localhost:8080", "https://pharmy.sodio.tech","https://pharmacy-backend.sodio.tech"],
+
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "https://pharmy.sodio.tech",
+    "https://pharmacy-backend.sodio.tech",
+  ],
   user: {
     additionalFields: {
-      role: { type: 'string', required: true, defaultValue: 'PHARMACIST' },
-      phoneNumber: { type: 'string', required: true },
-      pharmacyName: { type: 'string', required: true },
-      drugLicenseNumber: { type: 'string', required: true },
-    }
-  },
-  session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60,
+      role: { type: "string", required: true, defaultValue: "PHARMACIST" },
+      phoneNumber: { type: "string", required: true },
+      pharmacyName: { type: "string", required: true },
+      drugLicenseNumber: { type: "string", required: true },
     },
-    updateAge: 24 * 60 * 60,
-    expiresIn: 60 * 60 * 24 * 7,
-    cookieName: "better-auth.session_token",
-    cookieCacheName: "better-auth.session_data",
-    // UNSAFE: Disable all security for development
-    cookieOptions: {
-      secure: false,       // Allow HTTP
-      sameSite: 'lax',    // Allow cross-origin
-      httpOnly: false,    // Allow JavaScript access
-      domain: undefined   // No domain restriction
-    }
   },
+
   rateLimit: {
     window: 10,
     max: 100,
   },
+
   emailVerification: {
     autoSignInAfterVerification: true,
     enabled: true,
@@ -110,18 +92,18 @@ export const auth = betterAuth({
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Verify Your Email</h2>
-            <p>Hello ${user.name || 'User'},</p>
+            <p>Hello ${user.name || "User"},</p>
             <p>Please click the link below to verify your email address:</p>
-            <a href="${verificationUrl.toString()}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
-            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <a href="${verificationUrl.toString()}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
+            <p>If the button doesn't work, copy and paste this link:</p>
             <p style="word-break: break-all; color: #666;">${verificationUrl.toString()}</p>
-            <p>This link will expire in 24 hours.</p>
           </div>
         `,
       });
     },
-    sendOnSignUp: true
+    sendOnSignUp: true,
   },
+
   emailAndPassword: {
     enabled: true,
     disableSignUp: false,
@@ -129,7 +111,7 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     autoSignIn: true,
-    sendResetPassword: async ({ user, url, token }, request) => {
+    sendResetPassword: async ({ user, url }) => {
       const resetUrl = new URL(url);
       resetUrl.searchParams.set("callbackURL", `${process.env.FRONTEND_URL}/reset-password`);
       await sendEmail({
@@ -139,13 +121,11 @@ export const auth = betterAuth({
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Reset Your Password</h2>
-            <p>Hello ${user.name || 'User'},</p>
-            <p>You requested to reset your password. Click the link below to reset it:</p>
-            <a href="${resetUrl.toString()}" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
-            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <p>Hello ${user.name || "User"},</p>
+            <p>You requested to reset your password. Click below:</p>
+            <a href="${resetUrl.toString()}" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+            <p>If the button doesn't work, copy and paste this link:</p>
             <p style="word-break: break-all; color: #666;">${resetUrl.toString()}</p>
-            <p>This link will expire in 1 hour.</p>
-            <p>If you didn't request this password reset, please ignore this email.</p>
           </div>
         `,
       });

@@ -1,21 +1,17 @@
 {
   "compilerOptions": {
+    "module": "NodeNext", 
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    
-    "module": "NodeNext", 
-    "target": "ES2022",
-    "forceConsistentCasingInFileNames": true,
-    
-    "sourceMap": true,
     "declaration": false, 
-    
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    
-    "moduleResolution": "NodeNext",
-    "esModuleInterop": true,
-    "skipLibCheck": true
+    "sourceMap": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src/**/*"]
 }

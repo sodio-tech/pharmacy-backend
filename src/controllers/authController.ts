@@ -1,5 +1,5 @@
-import controllerWrapper from "../middleware/controllerWrapper";
-import * as authService from "../services/authService";
+import controllerWrapper from "../middleware/controllerWrapper.js";
+import * as authService from "../services/authService.js";
 
 export const addTwo = controllerWrapper(async (req, res, next) => {
   try {

@@ -5,9 +5,9 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import compression from "compression";
-import responseMiddleware from "./middleware/response";
+import responseMiddleware from "./middleware/response.js";
 
-import authRoutes from "./routes/v1/auth";
+import authRoutes from "./routes/v1/auth.js";
 
 dotenv.config();
 

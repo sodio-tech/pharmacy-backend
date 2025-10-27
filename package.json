@@ -7,7 +7,12 @@
     "start": "node dist/server.js",
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "tsc",
-    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo"
+    "knex:run": "npx tsx ./node_modules/.bin/knex --knexfile src/knexfile.ts",
+    "migrate:make": "npm run knex:run migrate:make",
+    "migrate:latest": "npm run knex:run migrate:latest",
+    "migrate:rollback": "npm run knex:run migrate:rollback",
+    "migrate:status": "npm run knex:run migrate:status",
+    "migrate:list": "npm run knex:run migrate:list"
   },
   "keywords": [],
   "author": "",

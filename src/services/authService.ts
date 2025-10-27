@@ -1,7 +1,8 @@
 
 
 
-export const addFunc = (a: number, b: number) => {
+export const addFunc = (a, b) => {
+  let ss = "as";
   return a + b;
 }
 

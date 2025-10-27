@@ -7,7 +7,7 @@ export const addTwo = controllerWrapper(async (req, res, next) => {
     const b = req.body.b;
     const result = authService.addFunc(a, b);
     return res.success("add_two", result, 200);
-  } catch (error) {
+  } catch (error: any) {
     return res.error("add_two_failed", error.message, 500);
   }
 });

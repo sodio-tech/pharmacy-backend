@@ -6,6 +6,7 @@ import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import compression from "compression";
 import responseMiddleware from "./middleware/response.js";
+import errorMiddleware from "./middleware/errorHandler.js";
 
 import authRoutes from "./routes/v1/auth.js";
 
@@ -30,6 +31,7 @@ app.use(responseMiddleware);
 // routes with versioning
 app.use("/api/v1", authRoutes);
 
+app.use(errorMiddleware);
 
 const server = http.createServer(app);
 

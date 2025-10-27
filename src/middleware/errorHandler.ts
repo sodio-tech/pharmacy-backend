@@ -1,7 +1,7 @@
 import dotenv from "dotenv";    
 dotenv.config();
 
-export default (err, req, res, next) => {
+export default function errorMiddleware (err, req, res, next){
   // TODO: When prod ready do this:
   // const isDevelopment = process.env.NODE_ENV === 'development';
   const isDevelopment = true;

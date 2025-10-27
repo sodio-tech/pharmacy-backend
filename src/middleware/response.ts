@@ -9,20 +9,19 @@
  */
 
 export default function responseMiddleware (req, res, next)  {
-  //Key represent the message key in the language file
   //Data is the data to be sent in the response
-  res.success = (key, data = {}, statusCode = 200) => {
+  res.success = (message, data = {}, statusCode = 200) => {
     return res.status(statusCode).json({
       success: true,
-      message: key,
+      message,
       data,
     });
   };
 
-  res.error = (key, errors = {}, statusCode = 500) => {
+  res.error = (message, errors = {}, statusCode = 500) => {
     return res.status(statusCode).json({
       success: false,
-      message: key,
+      message,
       errors,
     });
   };

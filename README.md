@@ -1,4 +1,4 @@
-# Project Name
+# Project 
 
 Pharmacy management system for pharmacies.
 

@@ -61,7 +61,7 @@ npm run dev
 npm run build
 
 # Start the server
-npm start
+npm run start
 ```
 
 ## Database Migrations

@@ -1,14 +1,105 @@
 import controllerWrapper from "../middleware/controllerWrapper.js";
 import * as authService from "../services/authService.js";
+import { StatusCodes } from 'http-status-codes'
+import jwt from "jsonwebtoken"
 
-export const addTwo = controllerWrapper(async (req, res, next) => {
+export const signup = controllerWrapper(async (req, res, next) => {
   try {
-    const a = req.body.a;
-    const b = req.body.b;
-    const result = authService.addFunc(a, b);
-    return res.success("add_two", result, 200);
+    const data = req.body;
+    const result = await authService.createUserService(data);
+    delete result.verification_token;
+    return res.success("user_created", result, 200);
   } catch (error: any) {
-    return res.error("add_two_failed", error.message, 500);
+    return res.error("user_creation_failed", error.message, 500);
   }
 });
 
+export const verifyAccount = controllerWrapper(async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.error("token_missing", [], 400);
+    const result = await authService.verifyAccountService(token);
+    if (result.error === 'user_not_found') {
+      return res.error("user_not_found", [], 404);
+    }
+    if (result.error === 'user_already_verified') {
+      return res.error("user_already_verified", [], 200);
+    }
+
+    return res.success("email_verified", [], 200);
+  } catch (err) {
+    console.log(err)
+    return res.error("invalid_token", [], 400);
+  }
+});
+
+
+export const resendVerificationEmail = controllerWrapper(async (req, res) => {
+  try {
+    const { email } = req.body
+    if (!email) return res.error('email_missing', [], 400)
+    const result = await authService.resendVerificationEmailService(email);
+    if (result.error === 'user_already_verified') {
+      return res.error(result.error, [], StatusCodes.CONFLICT);
+    } else if (result.error === 'user_not_found') {
+      return res.error(result.error, [], StatusCodes.NOT_FOUND);
+    }
+
+    return res.success("resent verification email", result, 200);
+  } catch (error) {
+    return res.error(`resend_verification_email_failed  ${error}`, [], 500);
+  }
+});
+
+export const signInUser = controllerWrapper(async (req, res, next) => {
+  try {
+    const requestParams = req.body;
+    const userLogin = await authService.signInUserService(requestParams);
+    if (userLogin.email_not_found === true) {
+      return res.error("email_not_found",[], StatusCodes.FORBIDDEN);
+    }
+    if(userLogin.email_verified === false){
+      return res.error("email_not_verified",[], StatusCodes.FORBIDDEN);
+    }
+    if(userLogin.password_mismatch === true){
+      return res.error("password_wrong",[],404);
+    }
+
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/v1/auth/refresh-token'
+    });
+
+    res.cookie('refresh_token', userLogin.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/v1/auth/refresh-token'
+    });
+
+    delete userLogin.refresh_token;
+    return res.success("user_login", userLogin, 200);
+  }
+  catch (error: any) {   
+    return res.error("user_login_failed", error.message, 500);
+  }
+
+});
+
+export const refreshToken = controllerWrapper(async (req, res) => {
+  try {
+    const { id } = req.user;
+    const result = await authService.refreshTokenService(id);
+    if (result.error === 'user_not_found') {
+      res.clearCookie('refresh_token');
+      return res.error("user_not_found",[], StatusCodes.FORBIDDEN);
+    }
+
+    return res.success("access_token_fetched", result, 200);
+  } catch (error: any) {
+    return res.error("refresh_token_failed", error.message, 500);
+  }
+});

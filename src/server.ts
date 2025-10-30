@@ -7,8 +7,9 @@ import { rateLimit } from "express-rate-limit";
 import compression from "compression";
 import responseMiddleware from "./middleware/response.js";
 import errorMiddleware from "./middleware/errorHandler.js";
+import cookieParser from 'cookie-parser';
 
-import authRoutes from "./routes/v1/auth.js";
+import authRoutes from "./routes/v1/authRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());
+app.use(cookieParser());
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -29,7 +31,7 @@ app.use(
 app.use(responseMiddleware);
 
 // routes with versioning
-app.use("/api/v1", authRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 app.use(errorMiddleware);
 

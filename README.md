@@ -1,6 +1,6 @@
 # Project Name
 
-Brief description of your project.
+Pharmacy management system for pharmacies.
 
 ## Prerequisites
 
@@ -81,15 +81,6 @@ npm run migrate:status
 # List all migrations
 npm run migrate:list
 ```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/signup` - Register a new user
-- `POST /api/v1/auth/login` - Login user
-- `POST /api/v1/auth/refresh-token` - Refresh access token
-- `POST /api/v1/auth/logout` - Logout user
-
 ## Project Structure
 ```
 .

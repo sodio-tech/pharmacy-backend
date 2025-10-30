@@ -90,9 +90,9 @@ npm run migrate:list
 │   ├── middleware/      # Custom middleware
 │   ├── db/
 │   │   ├── migrations/  # Database migrations
-│   │   └── knexfile.ts  # Knex configuration
-│   ├── types/           # TypeScript type definitions
+│   │   
 │   └── server.ts        # Application entry point
+|   |__ knexfile.ts       # Knex configuration
 ├── dist/                # Compiled JavaScript (generated)
 └── package.json
 ```

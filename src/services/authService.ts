@@ -214,7 +214,7 @@ export const forgotPasswordService = async (email: string) => {
     html: undefined,
     to: user.email,
     text: `Hi ${user.fullname} Your password reset link is ${reset_link}`,
-    subject: "Pharmy Email Verification",
+    subject: "Pharmy Password Reset",
     template: EMAIL_TEMPLATE_IDS.RESET_PASSWORD,
     dynamicTemplateData: {
       reset_password: reset_link

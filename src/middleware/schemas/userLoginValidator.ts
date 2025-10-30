@@ -5,8 +5,8 @@ export const userLoginSchema = z.object({
   password: z.string()
     .min(6, { message: 'Password cannot be an empty field' })
     .regex(
-      /^[a-zA-Z0-9!@#$%^&*]{6,}$/,
-      { message: 'Password must be at least 6 characters long and contain only letters, numbers, and special characters !@#$%^&*' }
+      /^[a-zA-Z0-9!@#$%^&*]{8,}$/,
+      { message: 'Password must be at least 8 characters long and contain only letters, numbers, and special characters !@#$%^&*' }
     )
 });
 

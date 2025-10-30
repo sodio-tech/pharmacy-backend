@@ -1,7 +1,6 @@
 import controllerWrapper from "../middleware/controllerWrapper.js";
 import * as authService from "../services/authService.js";
 import { StatusCodes } from 'http-status-codes'
-import jwt from "jsonwebtoken"
 
 export const signup = controllerWrapper(async (req, res, next) => {
   try {
@@ -14,7 +13,7 @@ export const signup = controllerWrapper(async (req, res, next) => {
   }
 });
 
-export const verifyAccount = controllerWrapper(async (req, res) => {
+export const verifyAccount = controllerWrapper(async (req, res, next) => {
   try {
     const { token } = req.body;
     if (!token) return res.error("token_missing", [], 400);
@@ -34,7 +33,7 @@ export const verifyAccount = controllerWrapper(async (req, res) => {
 });
 
 
-export const resendVerificationEmail = controllerWrapper(async (req, res) => {
+export const resendVerificationEmail = controllerWrapper(async (req, res, next) => {
   try {
     const { email } = req.body
     if (!email) return res.error('email_missing', [], 400)
@@ -89,7 +88,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
 
 });
 
-export const refreshToken = controllerWrapper(async (req, res) => {
+export const refreshToken = controllerWrapper(async (req, res, next) => {
   try {
     const { id } = req.user;
     const result = await authService.refreshTokenService(id);
@@ -101,5 +100,39 @@ export const refreshToken = controllerWrapper(async (req, res) => {
     return res.success("access_token_fetched", result, 200);
   } catch (error: any) {
     return res.error("refresh_token_failed", error.message, 500);
+  }
+});
+
+export const forgotPassword = controllerWrapper(async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.error("email_required", [], StatusCodes.BAD_REQUEST);
+    }
+    const result = await authService.forgotPasswordService(email);
+    if (result.error === 'user_not_found') {
+      return res.error("email_not_found",[], StatusCodes.FORBIDDEN);
+    }
+    return res.success("reset_email_sent", result, 200);
+  } catch (error: any) {
+    return res.error("reset_link_failed_generation", error.message, 500);
+  }
+});
+
+export const resetPassword = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { new_password } = req.body;
+    const result = await authService.resetPasswordService(user.id, new_password);
+    if (result.error === 'user_not_found') {
+      return res.error("token_not_found",[], StatusCodes.FORBIDDEN);
+    }
+    if (result.error === 'new_password_is_same_as_old') {
+      return res.error("new_password_is_same_as_old",[], StatusCodes.CONFLICT);
+    }
+
+    return res.success("password_reset", result, 200);
+  } catch (error: any) {
+    return res.error("reset_password_failed", error.message, 500);
   }
 });

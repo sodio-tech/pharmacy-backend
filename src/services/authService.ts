@@ -195,3 +195,51 @@ export const refreshTokenService = async (user_id: string) => {
   result.access_token = access_token;
   return result
 };
+
+export const forgotPasswordService = async (email: string) => {
+  const user = await findOne({ email});
+  if (!user) {
+    return {error: 'user_not_found'}
+  }
+
+  const token = jwt.sign(
+    { email: user.email },
+    process.env.JWT_ACCESS_SECRET_KEY!,
+    { expiresIn: '12h'} as any
+  );
+
+  const reset_link = `${process.env.FRONTEND_URL}/change-password?token=${token}`;
+  await sendEmail({
+    from: undefined,
+    html: undefined,
+    to: user.email,
+    text: `Hi ${user.fullname} Your password reset link is ${reset_link}`,
+    subject: "Pharmy Email Verification",
+    template: EMAIL_TEMPLATE_IDS.RESET_PASSWORD,
+    dynamicTemplateData: {
+      reset_password: reset_link
+    }
+  });
+
+  return {success: true};
+}
+
+export const resetPasswordService = async (userId: string, newPassword: string) => {
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const currentHashedPassword = await knex('users')
+    .where({ id: userId })
+    .select('password')
+    .first();
+
+  const isMatch = await bcrypt.compare(newPassword, currentHashedPassword.password);
+  if (isMatch) {
+    return { error: 'new_password_is_same_as_old' };
+  }
+
+  const res = await knex('users')
+    .where({ id: userId })
+    .update({ password: hashedPassword });
+
+  return {success: true};
+};
+

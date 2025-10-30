@@ -28,3 +28,4 @@ export const validator = (schema, property = "body") => {
 
 export { signupForm} from "./schemas/signupForm.js";
 export {userLoginSchema } from "./schemas/userLoginValidator.js"
+export {resetPasswordSchema } from "./schemas/resetPasswordValidator.js"

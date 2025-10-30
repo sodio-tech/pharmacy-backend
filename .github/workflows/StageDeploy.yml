@@ -29,4 +29,4 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             npm i --legacy-peer-deps
             npm run build
-            pm2 restart pharmacy-backend || pm2 start dist/index.js --name "pharmacy-backend"
+            pm2 restart pharmacy-backend || pm2 start dist/server.js --name "pharmacy-backend"

@@ -236,7 +236,7 @@ export const resetPasswordService = async (userId: string, newPassword: string) 
     return { error: 'new_password_is_same_as_old' };
   }
 
-  const res = await knex('users')
+  await knex('users')
     .where({ id: userId })
     .update({ password: hashedPassword });
 

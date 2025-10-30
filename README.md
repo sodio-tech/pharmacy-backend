@@ -60,7 +60,7 @@ npm run dev
 # Build the application
 npm run build
 
-# Start the server
+# Start the production server (after building)
 npm run start
 ```
 

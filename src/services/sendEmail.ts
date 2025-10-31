@@ -21,7 +21,7 @@ export const sendEmail =  async ({
 }) => {
   try {
     const msg: any = {
-      from: from || process.env.SENDER_EMAIL || "contact@sodio.tech",
+      from: from || "contact@sodio.tech" || process.env.SENDER_EMAIL,
       to: to,
       subject
     }

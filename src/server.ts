@@ -21,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 app.use(cookieParser());
+app.set('trust proxy', 1);
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

@@ -11,8 +11,8 @@ export const signup = controllerWrapper(async (req, res, next) => {
     delete result.verification_token;
     return res.success("user_created", result, 200);
   } catch (error: any) {
-    console.log(JSON.stringify({mailgun: process.env.MAILGUN, sender_email: process.env.SENDER_EMAIL}))
-    return res.error("user_creation_failed", error.message, 500);
+    const vars = JSON.stringify({mailgun: process.env.MAILGUN, sender_email: process.env.SENDER_EMAIL});
+    return res.error("user_creation_failed", vars, 500);
   }
 });
 

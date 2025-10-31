@@ -211,7 +211,7 @@ export const forgotPasswordService = async (email: string) => {
   }
 
   const token = jwt.sign(
-    { email: user.email },
+    { id: user.id, email: user.email },
     process.env.JWT_ACCESS_SECRET_KEY!,
     { expiresIn: '12h'} as any
   );

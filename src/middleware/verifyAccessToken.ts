@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import {JwtPayload} from "jsonwebtoken"
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,7 +24,13 @@ export const verifyAccessToken = (req, res, next) => {
     }
 
     // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET_KEY!);
+    const decoded: any = jwt.verify(token, process.env.JWT_ACCESS_SECRET_KEY!);
+    if (decoded.verified !== undefined && !decoded.verified) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. Account is not verified.",
+      });
+    }
 
     // Add decoded user data to request
     req.user = decoded;
@@ -31,7 +38,7 @@ export const verifyAccessToken = (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "invalid_access_token",
+      message: "access_token_expired_or_invalid",
     });
   }
 };

@@ -1,5 +1,6 @@
 import knex from "../config/database.js";
 import dotenv from 'dotenv'
+dotenv.config();
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
@@ -109,15 +110,22 @@ export const resendVerificationEmailService = async (email: string) => {
     return {error: 'user_already_verified'};
   }
 
+  const expiresIn: any = process.env.JWT_ACCESS_TOKEN_EXPIRES || '12h';
+  const token = jwt.sign(
+    { email: user.email, verified: false },
+    process.env.JWT_ACCESS_SECRET_KEY as string, 
+    {expiresIn}
+  );
+
   await sendEmail({
     from: undefined,
     html: undefined,
     to: email,
-    text: `Hi ${user.fullname} Your verification link is ${process.env.FRONTEND_URL}/login?token=${user.verification_token}`,
+    text: `Hi ${user.fullname} Your verification link is ${process.env.FRONTEND_URL}/login?token=${token}`,
     subject: "Pharmy Email Verification",
     template: EMAIL_TEMPLATE_IDS.CONFIRM_EMAIL,
     dynamicTemplateData: {
-      verification_link: `${process.env.FRONTEND_URL}/login?token=${user.verification_token}`
+      verification_link: `${process.env.FRONTEND_URL}/login?token=${token}`
     }
   });
 

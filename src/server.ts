@@ -10,6 +10,7 @@ import errorMiddleware from "./middleware/errorHandler.js";
 import cookieParser from 'cookie-parser';
 
 import authRoutes from "./routes/v1/authRoutes.js";
+import userRoutes from "./routes/v1/userRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(responseMiddleware);
 
 // routes with versioning
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/", userRoutes);
 
 app.use(errorMiddleware);
 

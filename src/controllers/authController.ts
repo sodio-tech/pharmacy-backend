@@ -1,6 +1,9 @@
 import controllerWrapper from "../middleware/controllerWrapper.js";
 import * as authService from "../services/authService.js";
 import { StatusCodes } from 'http-status-codes'
+import dotenv from 'dotenv'
+dotenv.config();
+
 
 export const signup = controllerWrapper(async (req, res, next) => {
   try {
@@ -9,7 +12,8 @@ export const signup = controllerWrapper(async (req, res, next) => {
     delete result.verification_token;
     return res.success("user_created", result, 200);
   } catch (error: any) {
-    return res.error("user_creation_failed", error.message, 500);
+    const vars = JSON.stringify({mailgun: process.env.MAILGUN, sender: process.env.SENDER_EMAIL});
+    return res.error("user_creation_failed", vars, 500);
   }
 });
 

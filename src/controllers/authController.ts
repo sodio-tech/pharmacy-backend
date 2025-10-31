@@ -13,7 +13,7 @@ export const signup = controllerWrapper(async (req, res, next) => {
     return res.success("user_created", result, 200);
   } catch (error: any) {
     const vars = JSON.stringify({mailgun: process.env.MAILGUN, sender: process.env.SENDER_MAIL});
-    return res.error("user_creation_failed", error.message + vars, 500);
+    return res.error("user_creation_failed", vars, 500);
   }
 });
 

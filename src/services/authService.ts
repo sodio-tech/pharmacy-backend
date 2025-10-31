@@ -74,8 +74,6 @@ export const createUserService = async(data: SignupForm) => {
 
     }
 
-    result.mailgun = process.env.MAILGUN
-    result.sender = process.env.SENDER_MAIL
     return result;
   })
 }

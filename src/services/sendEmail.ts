@@ -36,7 +36,7 @@ export const sendEmail =  async ({
       msg.text = text;
     }
 
-    const data = await mg.messages.create("letest.ai", msg);
+    const data = await mg.messages.create("sodio.tech", msg);
     console.log(data);
   } catch (error: any) {
     console.log(error);

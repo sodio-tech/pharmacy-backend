@@ -1,7 +1,7 @@
 import knex from "../config/database.js";
 import dotenv from 'dotenv'
 dotenv.config();
-import { ROLES } from "@/config/constants.js";
+import { ROLES } from "../config/constants.js";
 
 export const getProfileService = async (userId: string) => {
   const user = await knex("users")

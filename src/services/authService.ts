@@ -66,7 +66,7 @@ export const createUserService = async(data: SignupForm) => {
         to: result.email,
         text: `Hi ${result.full_name} Your verification link is ${verification_link}`,
         subject: "Pharmy Email Verification",
-        template: EMAIL_TEMPLATE_IDS.CONFIRM_EMAIL,
+        template: EMAIL_TEMPLATE_IDS.PHARMY_CONFIRM_EMAIL,
         dynamicTemplateData: {
           verification_link
         }
@@ -123,7 +123,7 @@ export const resendVerificationEmailService = async (email: string) => {
     to: email,
     text: `Hi ${user.fullname} Your verification link is ${process.env.FRONTEND_URL}/login?token=${token}`,
     subject: "Pharmy Email Verification",
-    template: EMAIL_TEMPLATE_IDS.CONFIRM_EMAIL,
+    template: EMAIL_TEMPLATE_IDS.PHARMY_CONFIRM_EMAIL,
     dynamicTemplateData: {
       verification_link: `${process.env.FRONTEND_URL}/login?token=${token}`
     }

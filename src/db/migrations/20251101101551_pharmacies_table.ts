@@ -8,6 +8,9 @@ export async function up(knex: Knex): Promise<void> {
     table.foreign("super_admin").references("users.id");
     table.enum("subscription_status", ["active", "suspended", "cancelled", "trial"]).notNullable().defaultTo("trial");
     table.timestamps(true, true);
+
+    table.index('subscription_status');
+    table.index('super_admin');
   })
 }
 

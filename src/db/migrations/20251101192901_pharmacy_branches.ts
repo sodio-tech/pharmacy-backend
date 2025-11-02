@@ -11,6 +11,10 @@ export async function up(knex: Knex): Promise<void> {
     table.string("branch_location");
     table.string("drug_license_number");
     table.timestamps(true, true);
+
+    table.index('pharmacy_id');
+    table.index('super_admin');
+    table.foreign(["pharmacy_id", "super_admin"]).references(["pharmacies.id", "pharmacies.super_admin"]);
   })
 }
 

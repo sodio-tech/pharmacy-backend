@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 export const signup = controllerWrapper(async (req, res, next) => {
   try {
     const data = req.body;
-    const result = await authService.createUserService(data);
+    const result = await authService.createSuperAdminService(data);
     delete result.verification_token;
     return res.success("user_created", result, 200);
   } catch (error: any) {
@@ -59,7 +59,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       return res.error("email_not_found",[], StatusCodes.FORBIDDEN);
     }
     if(userLogin.email_verified === false){
-      return res.error("email_not_verified",[], StatusCodes.FORBIDDEN);
+      return res.error("Email is not verified",[], StatusCodes.FORBIDDEN);
     }
     if(userLogin.password_mismatch === true){
       return res.error("password_wrong",[],404);

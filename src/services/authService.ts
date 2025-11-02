@@ -21,11 +21,11 @@ export const findOne = async (query) => {
   }
 };
 
-export const createUserService = async(data: SignupForm) => {
+export const createSuperAdminService = async(data: SignupForm) => {
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const expiresIn: any = process.env.JWT_ACCESS_TOKEN_EXPIRES || '12h';
   const token = jwt.sign(
-    { email: data.email, verified: false },
+    { email: data.email, verified: false, role: ROLES.SUPER_ADMIN },
     process.env.JWT_ACCESS_SECRET_KEY as string, 
     {expiresIn}
   );
@@ -34,19 +34,32 @@ export const createUserService = async(data: SignupForm) => {
     const [result] = await trx("users")
       .insert({
         fullname: data.first_name + " " + data.last_name,
-        pharmacy_name: data.pharmacy_name,
         email: data.email,
         password: hashedPassword,
         phone_number: data.phone_number,
-        drug_license_number: data.drug_license_number,
         verification_token: token,
         role: ROLES.SUPER_ADMIN,
       })
       .returning("*")
 
     if (!result) {
-      throw new Error("User_creation_failed")
+      throw new Error("User creation failed")
     }
+
+    const [pharmacy] = await trx('pharmacies')
+      .insert({
+        pharmacy_name: data.pharmacy_name,
+        super_admin: result.id,
+      })
+      .returning("*")
+
+    if (!pharmacy) {
+      throw new Error("Pharmacy creation failed")
+    }
+
+    result.pharmacy_id = pharmacy.id;
+    result.pharmacy_name = pharmacy.pharmacy_name;
+    result.subscription_status = pharmacy.subscription_status;
 
     const res = [
       'password', 
@@ -112,7 +125,7 @@ export const resendVerificationEmailService = async (email: string) => {
 
   const expiresIn: any = process.env.JWT_ACCESS_TOKEN_EXPIRES || '12h';
   const token = jwt.sign(
-    { email: user.email, verified: false },
+    { email: user.email, verified: false, role: user.role },
     process.env.JWT_ACCESS_SECRET_KEY as string, 
     {expiresIn}
   );
@@ -162,7 +175,7 @@ export const signInUserService = async (loginData: UserLogin) => {
       const access_token = jwt.sign(
         { 
           id: user.id, email: user.email, verified: user.email_verified, 
-          two_fa_enabled: result.two_fa_enabled 
+          two_fa_enabled: result.two_fa_enabled, role: user.role
         },
         process.env.JWT_ACCESS_SECRET_KEY!,
         { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any
@@ -194,7 +207,7 @@ export const refreshTokenService = async (user_id: string) => {
   const access_token = jwt.sign(
     { 
       id: user.id, email: user.email, verified: user.email_verified, 
-      two_fa_enabled: result.two_fa_enabled 
+      two_fa_enabled: result.two_fa_enabled, role: user.role
     },
     process.env.JWT_ACCESS_SECRET_KEY!,
     { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES } as any
@@ -211,7 +224,7 @@ export const forgotPasswordService = async (email: string) => {
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: ROLES.SUPER_ADMIN },
     process.env.JWT_ACCESS_SECRET_KEY!,
     { expiresIn: '12h'} as any
   );

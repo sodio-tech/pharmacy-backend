@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     table.increments("id").primary();
     table.string("pharmacy_name");
     table.integer("super_admin").notNullable().unique();
-    table.foreign("super_admin").references("users.id");
+    table.foreign("super_admin").references("users.id").onDelete('CASCADE');
     table.enum("subscription_status", ["active", "suspended", "cancelled", "trial"]).notNullable().defaultTo("trial");
     table.timestamps(true, true);
 

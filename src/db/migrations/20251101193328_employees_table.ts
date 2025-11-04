@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     table.increments("id").primary();
     table.integer("employee_id").notNullable();
     table.foreign("employee_id").references("users.id").onDelete('CASCADE');
+    table.integer("pharmacy_id").notNullable().references("pharmacies.id").onDelete('CASCADE');
     table.integer("pharmacy_branch_id").notNullable();
     table.foreign("pharmacy_branch_id").references("pharmacy_branches.id").onDelete('CASCADE');
     table.timestamps(true, true);

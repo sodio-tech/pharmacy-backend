@@ -106,8 +106,9 @@ export const addEmployeeService = async (admin, employee: Employee) => {
     .insert({
       employee_id: user.id,
       pharmacy_branch_id: employee.branch_id,
+      pharmacy_id: employee.pharmacy_id,
     })
-    .returning(['employee_id', 'pharmacy_branch_id']);
+    .returning(['employee_id', 'pharmacy_branch_id', 'pharmacy_id']);
 
   result.role = ROLES[user.role];
   result.two_fa_enabled = user.two_factor_recovery_code ? true : false;

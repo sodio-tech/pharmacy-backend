@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("pharmacy_branches", (table) => {
     table.increments("id").primary();
     table.integer("pharmacy_id").notNullable();
-    table.foreign("pharmacy_id").references("pharmacies.id");
+    table.foreign("pharmacy_id").references("pharmacies.id").onDelete('CASCADE');
     table.string("branch_name");
     table.string("branch_location");
     table.string("drug_license_number");

@@ -170,6 +170,7 @@ export const signInUserService = async (loginData: UserLogin) => {
       return {password_mismatch: true};
     } 
 
+    result.role= ROLES[user.role];
     if (!result.two_fa_enabled) {
       // Create JWT token with user data
       const access_token = jwt.sign(

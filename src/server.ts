@@ -11,6 +11,9 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from "./routes/v1/authRoutes.js";
 import userRoutes from "./routes/v1/userRoutes.js";
+import pharmacyBranchRoutes from "./routes/v1/orgRoutes.js";
+import supplierRoutes from "./routes/v1/supplierRoutes.js"; 
+import productRoutes from "./routes/v1/productRoutes.js"
 
 dotenv.config();
 
@@ -35,6 +38,9 @@ app.use(responseMiddleware);
 // routes with versioning
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/", userRoutes);
+app.use("/api/v1/org", pharmacyBranchRoutes);
+app.use("/api/v1/supplier", supplierRoutes);
+app.use("/api/v1/products", productRoutes);
 
 app.use(errorMiddleware);
 

@@ -29,3 +29,6 @@ export const validator = (schema, property = "body") => {
 export { signupForm} from "./schemas/signupForm.js";
 export {userLoginSchema } from "./schemas/userLoginValidator.js"
 export {resetPasswordSchema } from "./schemas/resetPasswordValidator.js"
+export {newBranchValidator } from "./schemas/newBranchValidator.js"
+export {addEmployeeValidator } from "./schemas/addEmployeeValidator.js"
+export {addSupplierValidator} from "./schemas/addSupplierValidator.js"

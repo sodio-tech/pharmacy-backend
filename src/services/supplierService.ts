@@ -68,7 +68,6 @@ export const supplierPurchaseOrdersService = async (pharmacy_id: number, paginat
     .leftJoin("suppliers", "purchase_orders.supplier_id", "suppliers.id")
     .leftJoin("product_categories", "purchase_orders.product_category_id", "product_categories.id")
     .where("suppliers.pharmacy_id", pharmacy_id)
-    .andWhere("purchase_orders.is_delivered", true)
     .modify((qb) => {
       if(search) {
         qb.andWhere( builder => 

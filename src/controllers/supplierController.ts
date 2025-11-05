@@ -48,11 +48,11 @@ export const markPurchaseCompleted = controllerWrapper(async (req, res, next) =>
 export const getPurchaseOrders = controllerWrapper(async (req, res, next) => {
   try {
     const pharmacy_id = req.user?.pharmacy_id;
-    const {page = 1, limit = 5} = req.query;
+    const {page = 1, limit = 5, search} = req.query;
     if (!pharmacy_id) {
       throw new Error("something went wrong, please login again");
     }
-    const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit});
+    const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit, search});
     return res.success("Purchase orders listed", result, 200);
   } catch (error: any) {
     return res.error("Failed to list purchase orders", error.message, 500);

@@ -58,16 +58,26 @@ export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, 
 }
 
 export const supplierPurchaseOrdersService = async (pharmacy_id: number, pagination) => {
-  let {page, limit } = pagination;
+  let {page, limit, search} = pagination;
   page = Number(page); 
   limit = Number(limit);
   const offset = limit * (page - 1);
+  search = normaliseSearchText(search);
 
   let purchaseOrders = knex("purchase_orders")
     .leftJoin("suppliers", "purchase_orders.supplier_id", "suppliers.id")
     .leftJoin("product_categories", "purchase_orders.product_category_id", "product_categories.id")
     .where("suppliers.pharmacy_id", pharmacy_id)
     .andWhere("purchase_orders.is_delivered", true)
+    .modify((qb) => {
+      if(search) {
+        qb.andWhere( builder => 
+          builder.orWhereRaw(buildNormalizedSearch('suppliers.name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('suppliers.phone_number'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('suppliers.gstin'), [`%${search}%`])
+        )
+      }
+    })
     .select(
       "purchase_orders.id",
       "purchase_orders.purchase_date",

@@ -1,16 +1,7 @@
 import z from '../../config/zodConfig.js';
-import knex from '../../config/database.js';
 
 export const newBranchValidator = z.object({
-  pharmacy_id: z.number()
-    .refine(async (id) => {
-      const pharmacy = await knex("pharmacies")
-        .select("id")
-        .where({ id })
-        .first();
-
-      return pharmacy !== undefined;
-    }, 'Invalid or non-existent pharmacy id'),
+  pharmacy_id: z.number().optional(),
 
   branch_name: z.string()
     .min(3, 'Company name should have a minimum length of 3')

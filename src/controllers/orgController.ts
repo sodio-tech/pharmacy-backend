@@ -33,10 +33,7 @@ export const deleteBranch = controllerWrapper(async (req, res, next) => {
 export const getBranches = controllerWrapper(async (req, res, next) => {
   try {
     const user = req.user
-    const result = await orgService.getBranchesService(user, req.params.pharmacy_id);
-    if (result.error) {
-      return res.error(result.error, [], StatusCodes.BAD_REQUEST);
-    }
+    const result = await orgService.getBranchesService(user);
     return res.success("Branch created", result, 200);
   } catch (error: any) {
     return res.error("Failed to add Branch", error.message, 500);

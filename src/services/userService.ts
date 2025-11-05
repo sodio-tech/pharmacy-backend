@@ -6,7 +6,9 @@ import { ROLES } from "../config/constants.js";
 export const getProfileService = async (userData: {id: number, role: number}) => {
   const baseQuery = knex("users")
     if (userData.role === ROLES.SUPER_ADMIN) {
-      baseQuery.leftJoin('pharmacies', 'users.id', 'pharmacies.super_admin')
+      baseQuery
+        .leftJoin('pharmacies', 'users.id', 'pharmacies.super_admin')
+        .leftJoin('pharmacy_branch_employees', 'pharmacy_branch_employees.employee_id', 'users.id')
     }
     else {
       baseQuery
@@ -28,6 +30,7 @@ export const getProfileService = async (userData: {id: number, role: number}) =>
         'pharmacies.id as pharmacy_id',
         'pharmacies.pharmacy_name',
         'pharmacies.subscription_status',
+        'pharmacy_branch_employees.pharmacy_branch_id',
       )
 
     const [user] = await baseQuery;

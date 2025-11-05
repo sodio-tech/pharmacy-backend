@@ -13,7 +13,7 @@ export const addEmployeeValidator =
     last_name: z.string()
       .regex(/^[a-zA-Z]*$/, { message: 'Last name should only contain letters' }),
 
-    pharmacy_id: z.number(),
+    pharmacy_id: z.number().optional(),
     branch_id: z.number(),
     role: z.string().refine(val => ROLES[val], 'Invalid role'),
     email: z.email('Email must be a valid email')

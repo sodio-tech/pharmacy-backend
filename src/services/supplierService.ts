@@ -40,8 +40,12 @@ export const markPurchaseCompletedService = async (pharmacy_id: number, order_id
   return purchaseLog;
 }
 
-export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder) => {
-  const [ purchaseOrder  ] = await knex("purchase_orders").insert(newPurchaseOrder).returning("*");
+export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, pharmacy_id: number) => {
+  const insertion = {
+    ...newPurchaseOrder,
+    pharmacy_id
+  }
+  const [ purchaseOrder  ] = await knex("purchase_orders").insert(insertion).returning("*");
   if (!purchaseOrder) {
     throw new Error("Purchase order not added, something went wrong");
   }

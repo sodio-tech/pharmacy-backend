@@ -32,6 +32,7 @@ export const PermissionMap = {
   SUPPLIER: {
     VIEW: "supplier:view",
     EDIT: "supplier:edit",
+    ADD_SUPPLIER: "supplier:add_supplier",
   },
 } as const;
 

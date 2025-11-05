@@ -3,8 +3,12 @@ import dotenv from 'dotenv'
 dotenv.config();
 import {Supplier, PurchaseOrder} from "../middleware/schemas/types.js";
 
-export const addSupplierService = async (newSupplier: Supplier) => {
-  const [ supplier  ] = await knex("suppliers").insert(newSupplier).returning("*");
+export const addSupplierService = async (newSupplier: Supplier, pharmacy_id: number) => {
+  const supplier_ = {
+    ...newSupplier,
+    pharmacy_id
+  }
+  const [ supplier  ] = await knex("suppliers").insert(supplier_).returning("*");
   if (!supplier) {
     throw new Error("Supplier not added, something went wrong");
   }
@@ -158,4 +162,117 @@ export const listSuppliersService = async (pharmacy_id: number, pagination) => {
     total_pages: Math.ceil(total / limit)
   };
 
+}
+
+export const getGeneralSupplierAnalyticsService = async (pharmacy_id: number) => {
+  const _supplierStats = knex("suppliers")
+    .where("pharmacy_id", pharmacy_id)
+    .select(
+      knex.raw("COUNT(CASE WHEN is_active = true THEN 1 END)::integer as active_suppliers"),
+      knex.raw(`
+        COUNT(
+          CASE WHEN date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE) 
+          THEN 1 END
+        )::integer
+        as new_this_month`
+      )
+    )
+    .first();
+
+  const _purchaseStats = knex("purchase_orders")
+    .where("pharmacy_id", pharmacy_id)
+    .select(
+      knex.raw("COUNT(CASE WHEN is_delivered = false THEN 1 END)::integer as pending_purchases"),
+      knex.raw(`
+        SUM(CASE WHEN is_delivered = false THEN purchase_amount END)::integer 
+        as pending_purchase_amount`
+      ),
+      knex.raw(`
+        SUM(
+          CASE WHEN DATE_TRUNC('month', purchase_date) = DATE_TRUNC('month', CURRENT_DATE)
+          THEN purchase_amount END
+        )::integer 
+        as spending_this_month`
+      ),
+      knex.raw(`
+        SUM(
+          CASE WHEN DATE_TRUNC('month', purchase_date) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+          THEN purchase_amount END
+        )::integer 
+        as spending_prev_month`
+      ),
+      knex.raw(`
+        COUNT(
+          CASE WHEN delivered_on <= expected_delivery_date AND is_delivered = true
+          THEN 1 END
+        )::integer
+        as on_time_deliveries`
+      ),
+      knex.raw(`
+        COUNT(
+          CASE WHEN is_delivered = true
+          THEN 1 END
+        )::integer
+        as completed_deliveries`
+      ),
+    )
+    .first();
+    
+  const [supplierStats, purchaseStats] = await Promise.all([_supplierStats, _purchaseStats]);
+
+  let percentageIncrease: number | null = null;
+  const thisMonth = purchaseStats.spending_this_month ?? 0;
+  const prevMonth = purchaseStats.spending_prev_month ?? 0;
+  if (prevMonth > 0) {
+    percentageIncrease = ((thisMonth - prevMonth) / prevMonth) * 100;
+  }
+
+  const onTimeDeliveryRate = (purchaseStats.on_time_deliveries / purchaseStats.completed_deliveries) * 100;
+  return {
+    supplier_actvity: supplierStats,
+    purchase_stats: {
+      pending_purchases: purchaseStats.pending_purchases,
+      pending_purchase_amount: purchaseStats.pending_purchase_amount ?? 0,
+    },
+    spending_this_month: {
+      total: thisMonth,
+      percentage_increase_from_prev_month: percentageIncrease,
+    },
+    on_time_delivery_rate: onTimeDeliveryRate,
+  }
+}
+
+export const getSupplierPerformanceReportService = async (pharmacy_id: number) => {
+  const supplierPerformances = await knex("purchase_orders")
+    .leftJoin("suppliers", "purchase_orders.supplier_id", "suppliers.id")
+    .where("purchase_orders.pharmacy_id", pharmacy_id)
+    .select(
+      "suppliers.name as supplier_name",
+      "purchase_orders.supplier_id as supplier_id",
+      knex.raw(`
+        COUNT(
+          CASE WHEN delivered_on <= expected_delivery_date AND is_delivered = true
+          THEN 1 END
+        )::integer
+        as on_time_deliveries`
+      ),
+      knex.raw(`
+        COUNT(
+          CASE WHEN is_delivered = true
+          THEN 1 END
+        )::integer
+        as total_deliveries`
+      )
+    )
+    .groupBy("purchase_orders.supplier_id", "suppliers.name")
+
+  const rankedReport = supplierPerformances.map(supplier => {
+    return {
+      ...supplier,
+      percentage: (supplier.on_time_deliveries / supplier.total_deliveries) * 100,
+    }
+  })
+  .sort((a, b) => b.percentage - a.percentage);
+
+  return { report: rankedReport };
 }

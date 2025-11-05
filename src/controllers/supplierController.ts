@@ -5,7 +5,8 @@ import { StatusCodes } from 'http-status-codes'
 export const addSupplier = controllerWrapper(async (req, res, next) => {
   try {
     const data = req.body;
-    const result = await supplierService.addSupplierService(data);
+    const pharmacy_id = req.user?.pharmacy_id;
+    const result = await supplierService.addSupplierService(data, pharmacy_id);
     return res.success("Supplier added", result, 200);
   } catch (error: any) {
     return res.error("Failed to add supplier", error.message, 500);
@@ -14,10 +15,10 @@ export const addSupplier = controllerWrapper(async (req, res, next) => {
 
 export const listSuppliers = controllerWrapper(async (req, res, next) => {
   try {
-    const pharmacyId = req.params.pharmacy_id;
+    const pharmacyId = req.user?.pharmacy_id;
     const {page = 1, limit = 5} = req.query;
     if (!pharmacyId) {
-      return res.error("Failed to get purchase orders", 'Pharmacy id is required', 400);
+      throw new Error("something went wrong, please login again");
     }
     const result = await supplierService.listSuppliersService(pharmacyId, {page, limit});
     return res.success("Suppliers listed", result, 200);
@@ -29,7 +30,7 @@ export const listSuppliers = controllerWrapper(async (req, res, next) => {
 export const markPurchaseCompleted = controllerWrapper(async (req, res, next) => {
   try {
     const order_id = req.params.order_id;
-    const pharmacy_id = req.query.pharmacy_id;
+    const pharmacy_id = req.user?.pharmacy_id;
     const { delivered_on = new Date() } = req.query;
     if (!order_id || !pharmacy_id) {
       return res.error("Failed to mark purchase order as completed", 'Order id and pharmacy id are required', 400);
@@ -46,10 +47,10 @@ export const markPurchaseCompleted = controllerWrapper(async (req, res, next) =>
 
 export const getPurchaseOrders = controllerWrapper(async (req, res, next) => {
   try {
-    const pharmacy_id = req.params.pharmacy_id;
+    const pharmacy_id = req.user?.pharmacy_id;
     const {page = 1, limit = 5} = req.query;
     if (!pharmacy_id) {
-      return res.error("Failed to get purchase orders", 'Pharmacy id is required', 400);
+      throw new Error("something went wrong, please login again");
     }
     const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit});
     return res.success("Purchase orders listed", result, 200);
@@ -69,5 +70,25 @@ export const makePurchaseOrder = controllerWrapper(async (req, res, next) => {
     return res.success("Purchase order added", result, 200);
   } catch (error: any) {
     return res.error("Failed to add purchase order", error.message, 500);
+  }
+});
+
+export const getGeneralSupplierAnalytics = controllerWrapper(async (req, res, next) => {
+  try {
+    const pharmacy_id = req.user?.pharmacy_id;
+    const result = await supplierService.getGeneralSupplierAnalyticsService(pharmacy_id);
+    return res.success("General analytics fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to get general analytics", error.message, 500);
+  }
+});
+
+export const getSupplierPerformanceReport = controllerWrapper(async (req, res, next) => {
+  try {
+    const pharmacy_id = req.user?.pharmacy_id;
+    const result = await supplierService.getSupplierPerformanceReportService(pharmacy_id);
+    return res.success("Performance report fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to get performance report", error.message, 500);
   }
 });

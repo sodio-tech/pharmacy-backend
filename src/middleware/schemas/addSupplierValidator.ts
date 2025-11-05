@@ -33,8 +33,6 @@ export const addSupplierValidator =
     license_number: z.string()
       .regex(/^[a-zA-Z0-9-]*$/, 'License number must be a valid license number')
       .refine(val => val.trim().length > 0, 'License number cannot be empty'),
-
-    pharmacy_id: z.number(),
   })
 
 export type Supplier = z.infer<typeof addSupplierValidator>;

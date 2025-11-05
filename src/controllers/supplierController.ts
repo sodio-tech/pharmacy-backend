@@ -16,11 +16,11 @@ export const addSupplier = controllerWrapper(async (req, res, next) => {
 export const listSuppliers = controllerWrapper(async (req, res, next) => {
   try {
     const pharmacyId = req.user?.pharmacy_id;
-    const {page = 1, limit = 5} = req.query;
+    const {page = 1, limit = 5, search} = req.query;
     if (!pharmacyId) {
       throw new Error("something went wrong, please login again");
     }
-    const result = await supplierService.listSuppliersService(pharmacyId, {page, limit});
+    const result = await supplierService.listSuppliersService(pharmacyId, {page, limit, search});
     return res.success("Suppliers listed", result, 200);
   } catch (error: any) {
     return res.error("Failed to list suppliers", error.message, 500);

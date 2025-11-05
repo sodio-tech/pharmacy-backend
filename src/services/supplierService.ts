@@ -2,6 +2,7 @@ import knex from "../config/database.js";
 import dotenv from 'dotenv'
 dotenv.config();
 import {Supplier, PurchaseOrder} from "../middleware/schemas/types.js";
+import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 
 export const addSupplierService = async (newSupplier: Supplier, pharmacy_id: number) => {
   const supplier_ = {
@@ -104,15 +105,25 @@ export const supplierPurchaseOrdersService = async (pharmacy_id: number, paginat
 }
 
 export const listSuppliersService = async (pharmacy_id: number, pagination) => {
-  let {page, limit } = pagination;
+  let {page, limit, search} = pagination;
   page = Number(page); 
   limit = Number(limit);
   const offset = limit * (page - 1);
+  search = normaliseSearchText(search);
 
   let suppliers = knex("suppliers")
     .leftJoin("purchase_orders", "suppliers.id", "purchase_orders.supplier_id")
     .leftJoin("product_categories", "purchase_orders.product_category_id", "product_categories.id")
     .where("suppliers.pharmacy_id", pharmacy_id)
+    .modify((qb) => {
+      if(search) {
+        qb.andWhere( builder => 
+          builder.orWhereRaw(buildNormalizedSearch('suppliers.name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('suppliers.phone_number'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('suppliers.gstin'), [`%${search}%`])
+        )
+      }
+    })
     .select(
       "suppliers.id as supplier_id",
       "suppliers.name as supplier_name", 

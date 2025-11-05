@@ -95,17 +95,33 @@ export const verifyAccountService = async (token: string) => {
   const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET_KEY!) as {email: string};
   const email = decoded.email;
   const user = await findOne({ email});
+  const { pharmacy_id } = await knex("pharmacies")
+    .where({ super_admin: user.id })
+    .select("id as pharmacy_id")
+    .first();
+  
   const result: any = {};
   if (!user) result.error = 'user_not_found'
   
   if (user.email_verified) result.error = 'user_already_verified'
 
-  await knex("users")
+  const updated = await knex("users")
     .where({ email })
     .update({
       email_verified: true,
       verification_token: null,
     })
+    .returning("*")
+  
+  if (updated) {
+    const expiresIn: any = process.env.JWT_ACCESS_TOKEN_EXPIRES || '12h';
+    const jwttoken = jwt.sign(
+      { email: user.email, verified: true, role: user.role, id: user.id, pharmacy_id},
+      process.env.JWT_ACCESS_SECRET_KEY as string, 
+      {expiresIn}
+    );
+    result.access_token = jwttoken;
+  }
 
   return result;
 };
@@ -161,6 +177,20 @@ export const signInUserService = async (loginData: UserLogin) => {
       return { email_verified: false};
     }
 
+    let pharmacy_id: number;
+    if (user.role === ROLES.SUPER_ADMIN) {
+      pharmacy_id = (await knex("pharmacies")
+        .where({ super_admin: user.id })
+        .select("id as pharmacy_id")
+        .first())?.pharmacy_id;
+    }
+    else {
+      pharmacy_id = (await knex("pharmacy_branch_employees")
+        .where({ employee_id: user.id })
+        .select("pharmacy_id")
+        .first())?.pharmacy_id;
+    }
+
     result.id = user.id;
     result.email = user.email;
     result.two_fa_enabled = user.two_factor_recovery_code ? true : false;
@@ -176,7 +206,7 @@ export const signInUserService = async (loginData: UserLogin) => {
       const access_token = jwt.sign(
         { 
           id: user.id, email: user.email, verified: user.email_verified, 
-          two_fa_enabled: result.two_fa_enabled, role: user.role
+          two_fa_enabled: result.two_fa_enabled, role: user.role, pharmacy_id
         },
         process.env.JWT_ACCESS_SECRET_KEY!,
         { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any

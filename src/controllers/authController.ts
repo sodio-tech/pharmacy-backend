@@ -25,7 +25,7 @@ export const verifyAccount = controllerWrapper(async (req, res, next) => {
       return res.error("user_already_verified", [], 200);
     }
 
-    return res.success("email_verified", [], 200);
+    return res.success("email_verified", result, 200);
   } catch (err) {
     console.log(err)
     return res.error("invalid_token", [], 400);

@@ -16,11 +16,11 @@ export const addSupplier = controllerWrapper(async (req, res, next) => {
 export const listSuppliers = controllerWrapper(async (req, res, next) => {
   try {
     const pharmacyId = req.user?.pharmacy_id;
-    const {page = 1, limit = 5, search} = req.query;
+    const {page = 1, limit = 5, search, product_category_id} = req.query;
     if (!pharmacyId) {
       throw new Error("something went wrong, please login again");
     }
-    const result = await supplierService.listSuppliersService(pharmacyId, {page, limit, search});
+    const result = await supplierService.listSuppliersService(pharmacyId, {page, limit, search, product_category_id});
     return res.success("Suppliers listed", result, 200);
   } catch (error: any) {
     return res.error("Failed to list suppliers", error.message, 500);
@@ -48,11 +48,11 @@ export const markPurchaseCompleted = controllerWrapper(async (req, res, next) =>
 export const getPurchaseOrders = controllerWrapper(async (req, res, next) => {
   try {
     const pharmacy_id = req.user?.pharmacy_id;
-    const {page = 1, limit = 5, search} = req.query;
+    const {page = 1, limit = 5, search, product_category_id} = req.query;
     if (!pharmacy_id) {
       throw new Error("something went wrong, please login again");
     }
-    const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit, search});
+    const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit, search, product_category_id});
     return res.success("Purchase orders listed", result, 200);
   } catch (error: any) {
     return res.error("Failed to list purchase orders", error.message, 500);

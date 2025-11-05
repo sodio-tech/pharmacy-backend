@@ -58,7 +58,7 @@ export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, 
 }
 
 export const supplierPurchaseOrdersService = async (pharmacy_id: number, pagination) => {
-  let {page, limit, search} = pagination;
+  let {page, limit, search, product_category_id} = pagination;
   page = Number(page); 
   limit = Number(limit);
   const offset = limit * (page - 1);
@@ -76,6 +76,9 @@ export const supplierPurchaseOrdersService = async (pharmacy_id: number, paginat
             .orWhereRaw(buildNormalizedSearch('suppliers.phone_number'), [`%${search}%`])
             .orWhereRaw(buildNormalizedSearch('suppliers.gstin'), [`%${search}%`])
         )
+      }
+      if(product_category_id) {
+        qb.andWhere("product_categories.id", product_category_id)
       }
     })
     .select(
@@ -115,7 +118,7 @@ export const supplierPurchaseOrdersService = async (pharmacy_id: number, paginat
 }
 
 export const listSuppliersService = async (pharmacy_id: number, pagination) => {
-  let {page, limit, search} = pagination;
+  let {page, limit, search, product_category_id} = pagination;
   page = Number(page); 
   limit = Number(limit);
   const offset = limit * (page - 1);
@@ -132,6 +135,9 @@ export const listSuppliersService = async (pharmacy_id: number, pagination) => {
             .orWhereRaw(buildNormalizedSearch('suppliers.phone_number'), [`%${search}%`])
             .orWhereRaw(buildNormalizedSearch('suppliers.gstin'), [`%${search}%`])
         )
+      }
+      if(product_category_id) {
+        qb.andWhere("product_categories.id", product_category_id)
       }
     })
     .select(

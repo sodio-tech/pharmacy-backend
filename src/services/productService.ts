@@ -120,3 +120,9 @@ export const getProductDetailsService = async (user, product_id: string) => {
   return { products };
 }
 
+export const getProductUnitsService = async () => {
+  const product_units = await knex("product_units")
+    .select("id", "unit")   
+
+  return {product_units};
+}

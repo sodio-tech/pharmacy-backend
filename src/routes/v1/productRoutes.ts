@@ -25,4 +25,6 @@ router.get("/catalogue", productController.getProducts);
 
 router.get("/details", productController.getProductDetails);
 
+router.get("/units", productController.getProductUnits)
+
 export default router;

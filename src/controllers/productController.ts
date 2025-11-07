@@ -44,3 +44,13 @@ export const getProductDetails = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch product details", error.message, 500);
   }
 });
+
+export const getProductUnits = controllerWrapper(async (req, res, next) => {
+  try {
+    const result = await productService.getProductUnitsService();
+    return res.success("Product details fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch product details", error.message, 500);
+  }
+});
+

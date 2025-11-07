@@ -21,7 +21,7 @@ export const verifyRefreshToken = (req, res, next) => {
     res.clearCookie('refresh_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       path: '/api/v1/auth/refresh-token'
     });
 

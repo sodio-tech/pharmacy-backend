@@ -2,7 +2,7 @@ import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("purchase_orders", table => {
-    table.increments("id").primary();
+    table.increments("id");
     table.integer("supplier_id").notNullable().references("suppliers.id");
     table.integer("pharmacy_id").notNullable().references("pharmacies.id");
     table.integer("product_category_id").notNullable().references("product_categories.id");

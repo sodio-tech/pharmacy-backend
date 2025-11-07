@@ -142,7 +142,7 @@ export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, 
 }
 
 export const listPurchaseOrdersService = async (pharmacy_id: number, pagination) => {
-  let {page, limit, search, product_category_id} = pagination;
+  let {status, page, limit, search, product_category_id} = pagination;
   page = Number(page); 
   limit = Number(limit);
   const offset = limit * (page - 1);
@@ -163,6 +163,9 @@ export const listPurchaseOrdersService = async (pharmacy_id: number, pagination)
       }
       if(product_category_id) {
         qb.andWhere("product_categories.id", product_category_id)
+      }
+      if (status) {
+        qb.andWhere("purchase_orders.status", status)
       }
     })
     .select(

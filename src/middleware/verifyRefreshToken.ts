@@ -22,7 +22,7 @@ export const verifyRefreshToken = (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      path: '/api/v1/auth/refresh-token'
+      // path: '/api/v1/auth/refresh-token'
     });
 
     return res.status(401).json({

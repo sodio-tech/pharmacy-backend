@@ -68,7 +68,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      path: '/api/v1/auth/refresh-token'
+      // path: '/api/v1/auth/refresh-token'
     });
 
     res.cookie('refresh_token', userLogin.refresh_token, {
@@ -76,7 +76,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       secure: process.env.NODE_ENV === 'production', 
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/v1/auth/refresh-token'
+      // path: '/api/v1/auth/refresh-token'
     });
 
     delete userLogin.refresh_token;

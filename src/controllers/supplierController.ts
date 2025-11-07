@@ -29,13 +29,8 @@ export const listSuppliers = controllerWrapper(async (req, res, next) => {
 
 export const markPurchaseCompleted = controllerWrapper(async (req, res, next) => {
   try {
-    const order_id = req.params.order_id;
     const pharmacy_id = req.user?.pharmacy_id;
-    const { delivered_on = new Date() } = req.query;
-    if (!order_id || !pharmacy_id) {
-      return res.error("Failed to mark purchase order as completed", 'Order id and pharmacy id are required', 400);
-    }
-    const result = await supplierService.markPurchaseCompletedService(pharmacy_id, order_id, delivered_on);
+    const result = await supplierService.markOrderFullfilledService(pharmacy_id, req.body);
     if (result.error) {
       return res.error(result.error, [], 400);
     }
@@ -52,7 +47,7 @@ export const getPurchaseOrders = controllerWrapper(async (req, res, next) => {
     if (!pharmacy_id) {
       throw new Error("something went wrong, please login again");
     }
-    const result = await supplierService.supplierPurchaseOrdersService(pharmacy_id, {page, limit, search, product_category_id});
+    const result = await supplierService.listPurchaseOrdersService(pharmacy_id, {page, limit, search, product_category_id});
     return res.success("Purchase orders listed", result, 200);
   } catch (error: any) {
     return res.error("Failed to list purchase orders", error.message, 500);

@@ -10,3 +10,37 @@ export const getCategories = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch categories", error.message, 500);
   }
 });
+
+export const addNewProduct = controllerWrapper(async (req, res, next) => {
+  try {
+    const admin = req.user;
+    const result = await productService.addNewProductService(admin, req);
+    return res.success("product added to inventory", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to add product", error.message, 500);
+  }
+});
+
+export const getProducts = controllerWrapper(async (req, res, next) => {
+  try {
+    const queryParams = req.query;
+    const pagination = {
+      ...queryParams,
+      page: Number(queryParams.page ?? 1),
+      limit: Number(queryParams.limit ?? 10),
+    }
+    const result = await productService.getProductsService(req.user.pharmacy_id, pagination);
+    return res.success("Products fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch products", error.message, 500);
+  }
+});
+
+export const getProductDetails = controllerWrapper(async (req, res, next) => {
+  try {
+    const result = await productService.getProductDetailsService(req.user, req.query.product_id);
+    return res.success("Product details fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch product details", error.message, 500);
+  }
+});

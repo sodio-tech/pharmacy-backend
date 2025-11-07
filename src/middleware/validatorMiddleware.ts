@@ -33,3 +33,5 @@ export {newBranchValidator } from "./schemas/newBranchValidator.js"
 export {addEmployeeValidator } from "./schemas/addEmployeeValidator.js"
 export {addSupplierValidator} from "./schemas/addSupplierValidator.js"
 export {addPurchaseOrderValidator} from "./schemas/addPurchaseOrder.js"
+export {newProductSchema} from './schemas/newProductValidator.js'
+export {orderFulfillmentSchema} from './schemas/orderFulfilledValidator.js'

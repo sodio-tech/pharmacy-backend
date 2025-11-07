@@ -14,13 +14,7 @@ router.post("/new-supplier", verifyRoleAccess(PermissionMap.SUPPLIER.ADD_SUPPLIE
   supplierController.addSupplier
 );
 
-router.post("/make-order", validator(addPurchaseOrderValidator), supplierController.makePurchaseOrder);
-
-router.patch("/order-completed/:order_id", supplierController.markPurchaseCompleted);
-
 router.get("/list", supplierController.listSuppliers);
-
-router.get("/orders", supplierController.getPurchaseOrders)
 
 router.get("/general-analytics", supplierController.getGeneralSupplierAnalytics)
 

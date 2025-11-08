@@ -14,6 +14,8 @@ export const getOrderDetails = controllerWrapper(async (req, res, next) => {
 export const markPurchaseCompleted = controllerWrapper(async (req, res, next) => {
   try {
     const pharmacy_id = req.user?.pharmacy_id;
+    const order_id = req.params.order_id;
+    req.body.order_id = order_id;
     const result = await ordersService.markOrderFullfilledService(pharmacy_id, req.body);
     if (result.error) {
       return res.error(result.error, [], 400);

@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
 import { SignupForm, UserLogin } from "../middleware/schemas/types.js";
 import { ROLES, EMAIL_TEMPLATE_IDS } from "../config/constants.js";
+import * as userService from "./userService.js"
 import { sendEmail } from "./sendEmail.js"
 
 /**
@@ -178,6 +179,7 @@ export const signInUserService = async (loginData: UserLogin) => {
     }
 
     let pharmacy_id: number;
+    let pharmacy_branch_id: number | null = null;
     if (user.role === ROLES.SUPER_ADMIN) {
       pharmacy_id = (await knex("pharmacies")
         .where({ super_admin: user.id })
@@ -185,10 +187,13 @@ export const signInUserService = async (loginData: UserLogin) => {
         .first())?.pharmacy_id;
     }
     else {
-      pharmacy_id = (await knex("pharmacy_branch_employees")
+      const res = await knex("pharmacy_branch_employees")
         .where({ employee_id: user.id })
-        .select("pharmacy_id")
-        .first())?.pharmacy_id;
+        .select("pharmacy_id", "pharmacy_branch_id")
+        .first()
+
+      pharmacy_id = res?.pharmacy_id;
+      pharmacy_branch_id = res?.pharmacy_branch_id;
     }
 
     result.id = user.id;
@@ -206,7 +211,8 @@ export const signInUserService = async (loginData: UserLogin) => {
       const access_token = jwt.sign(
         { 
           id: user.id, email: user.email, verified: user.email_verified, 
-          two_fa_enabled: result.two_fa_enabled, role: user.role, pharmacy_id
+          two_fa_enabled: result.two_fa_enabled, role: user.role, 
+          pharmacy_id, pharmacy_branch_id
         },
         process.env.JWT_ACCESS_SECRET_KEY!,
         { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any
@@ -235,10 +241,14 @@ export const refreshTokenService = async (user_id: string) => {
   const result: any = {};
   if (!user) result.error = 'user_not_found'
 
+  const userProfile = await userService.getProfileService({id: Number(user_id), role: Number(user.role)});
+
   const access_token = jwt.sign(
     { 
       id: user.id, email: user.email, verified: user.email_verified, 
-      two_fa_enabled: result.two_fa_enabled, role: user.role
+      two_fa_enabled: result.two_fa_enabled, role: user.role, 
+      pharmacy_id: userProfile.pharmacy_id,
+      pharmacy_branch_id: userProfile.pharmacy_branch_id,
     },
     process.env.JWT_ACCESS_SECRET_KEY!,
     { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES } as any

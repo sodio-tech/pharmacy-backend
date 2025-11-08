@@ -41,8 +41,10 @@ export const getPurchaseOrders = controllerWrapper(async (req, res, next) => {
 export const makePurchaseOrder = controllerWrapper(async (req, res, next) => {
   try {
     const data = req.body;
-    const pharmacy_id = req.user.pharmacy_id;
-    const result = await ordersService.makePurchaseOrderService(data, pharmacy_id);
+    const result = await ordersService.makePurchaseOrderService(data, req.user);
+    if (result.error) {
+      return res.error(result.error, [], 400);
+    }
     return res.success("Purchase order added", result, 200);
   } catch (error: any) {
     return res.error("Failed to add purchase order", error.message, 500);

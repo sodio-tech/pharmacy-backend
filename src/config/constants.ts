@@ -34,6 +34,13 @@ export const PermissionMap = {
     EDIT: "supplier:edit",
     ADD_SUPPLIER: "supplier:add_supplier",
   },
+  ORDER: {
+    VIEW: "order:view",
+    EDIT: "order:edit",
+    ADD_ORDER: "order:add_order",
+    FULFILL_ORDER: "order:fulfill_order",
+    DELETE_ORDER: "order:delete_order",
+  },
 } as const;
 
 type ExtractValues<T> = {

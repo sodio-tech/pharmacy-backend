@@ -11,13 +11,10 @@ router.use(verifyAccessToken);
 
 router.get("/details", ordersController.getOrderDetails);
 
-router.post("/make-order", validator(addPurchaseOrderValidator), ordersController.makePurchaseOrder);
+router.post("/make-order", verifyRoleAccess(PermissionMap.ORDER.ADD_ORDER), validator(addPurchaseOrderValidator), ordersController.makePurchaseOrder);
 
-router.patch("/order-completed/:order_id", ordersController.markPurchaseCompleted);
+router.patch("/order-completed/:order_id", verifyRoleAccess(PermissionMap.ORDER.FULFILL_ORDER), ordersController.markPurchaseCompleted);
 
 router.get("/list", ordersController.getPurchaseOrders)
-
-router.patch("/order-completed/:order_id", ordersController.markPurchaseCompleted);
-
 
 export default router

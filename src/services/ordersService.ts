@@ -1,3 +1,4 @@
+import { ROLES } from "@/config/constants.js";
 import knex from "../config/database.js";
 import {OrderFulfillment, PurchaseOrder} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
@@ -94,12 +95,21 @@ export const markOrderFullfilledService = async (pharmacy_id: number, fulfilledO
   return purchaseLog;
 }
 
-export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, pharmacy_id: number) => {
+export const makePurchaseOrderService = async (newPurchaseOrder: PurchaseOrder, admin) => {
+  const pharmacy_id = admin.pharmacy_id;
   const product_categories = Array.isArray(newPurchaseOrder.product_category_id) 
     ? newPurchaseOrder.product_category_id : [newPurchaseOrder.product_category_id];
   const insertion: any = {
     ...newPurchaseOrder,
     pharmacy_id
+  }
+
+  const branchOwned = await knex("pharmacy_branch_employees")
+    .where({employee_id: admin.id, pharmacy_branch_id: newPurchaseOrder.pharmacy_branch_id, pharmacy_id})
+    .first();
+
+  if (!branchOwned && admin.role !== ROLES.SUPER_ADMIN) {
+    return {error: "Unauthorized to make orders for this branch"};
   }
 
   delete insertion.product_category_id;

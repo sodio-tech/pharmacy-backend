@@ -55,32 +55,14 @@ export const markOrderFullfilledService = async (pharmacy_id: number, fulfilledO
       manufacturer_name: batch_data.manufacturer_name,
       manufacturer_code : batch_data.manufacturer_code ?? null,
       notes: batch_data.notes ?? null,
+      pharmacy_branch_id: res.pharmacy_branch_id,
+      quantity_received: batch_data.product.quantity,
+      available_stock: batch_data.product.quantity,
+      unit_cost: batch_data.product.unit_price
     }));
 
-    let batches = await trx("batches")
+    await trx("batches")
       .insert(batchInsertion)
-      .returning("id");
-
-    batches = batches.map(batch => batch.id);
-    let i = 0;
-    let branchBatchContents: any[] = [];
-    for (const batch_id of batches) {
-      const product = fulfilledOrder.order_batch_data[i]?.product;
-      branchBatchContents.push(
-        {
-          pharmacy_branch_id: res.pharmacy_branch_id,
-          batch_id,
-          quantity_received: product?.quantity,
-          available_stock: product?.quantity,
-          unit_price: product?.unit_price,
-          min_stock: product?.min_stock,
-          max_stock: product?.max_stock,
-        })
-      i++;
-    }
-
-    await trx("branch_stock_batches")
-      .insert(branchBatchContents)
 
     return res
   })

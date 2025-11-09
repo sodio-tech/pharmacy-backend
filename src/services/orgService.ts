@@ -40,7 +40,7 @@ export const deleteBranchService = async (admin, branch_id: number) => {
   return true;
 }
 
-export const getBranchesService = async (admin) => {
+export const getBranchesService = async (user) => {
   const branches = await knex("pharmacy_branches")
     .leftJoin('pharmacies', 'pharmacy_branches.pharmacy_id', 'pharmacies.id')
     .select(
@@ -49,8 +49,7 @@ export const getBranchesService = async (admin) => {
       "pharmacy_branches.branch_location", 
       "pharmacy_branches.drug_license_number", 
     )
-    .where('pharmacies.id', admin.pharmacy_id)
-    .andWhere('pharmacies.super_admin', admin.id)
+    .where('pharmacies.id', user.pharmacy_id)
     .orderBy("pharmacy_branches.created_at", "asc");
 
   return { branches };

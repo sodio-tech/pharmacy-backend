@@ -148,6 +148,8 @@ export const getExpiringStockService = async (pharmacy_id: number, branch_id: nu
       MAX(batches.expiry_date)
       <= 
       CURRENT_DATE + INTERVAL '1 month'
+      AND 
+      MAX(batches.expiry_date) > CURRENT_DATE
     `)
     .orderBy('batches.expiry_date', 'desc')
 

@@ -34,7 +34,7 @@ export const getOrderDetailsService = async(user, order_id: string) => {
   return { orders };
 }
 
-export const markOrderFullfilledService = async (pharmacy_id: number, fulfilledOrder: OrderFulfillment) => {
+export const markOrderFullfilledService = async (pharmacy_id: number, fulfilledOrder: OrderFulfillment & {order_id: number}) => {
   const purchaseLog = await knex.transaction(async (trx) => {
     const [res] = await trx('purchase_orders')   
       .where("id", fulfilledOrder.order_id)

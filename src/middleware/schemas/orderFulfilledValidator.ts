@@ -1,7 +1,6 @@
 import z from '../../config/zodConfig.js';
 
 export const orderFulfillmentSchema = z.object({
-  order_id: z.number(),
   fulfilled_on: z.coerce.date(),
   order_batch_data: z.array(z.object({
     notes: z.string().optional(),

@@ -22,7 +22,7 @@ export const getStockAlerts = controllerWrapper(async (req, res, next) => {
     
     if (!branch_id) return res.error("inventory_failed", "branch_id is required", 500);
     const result = await inventoryService.getStockAlertsService(req.user.pharmacy_id, branch_id, params);
-    return res.success("inventory", result, 200);
+    return res.success("stock alerts", result, 200);
   } catch (error: any) {
     return res.error("inventory_failed", error.message, 500);
   }

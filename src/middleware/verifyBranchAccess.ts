@@ -2,7 +2,7 @@ import { getBranchesService } from "../services/orgService.js";
 
 export const verifyBranchAccess = () => async (req, res, next) => {
   try {
-    let branch_id = req.params?.branch_id || req.query?.branch_id || req.body?.branch_id;
+    let branch_id = req.params?.branch_id || req.query?.branch_id || req.body?.branch_id || req.body?.pharmacy_branch_id;
     branch_id = Number(branch_id);
     if (!branch_id) return res.status(401).json({
       success: false,

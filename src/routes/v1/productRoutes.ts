@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {verifyAccessToken} from "../../middleware/verifyAccessToken.js";
-import { validator, newProductSchema} from "../../middleware/validatorMiddleware.js";
+import { validator, newProductSchema, updateProductSchema} from "../../middleware/validatorMiddleware.js";
 import { verifyRoleAccess } from "../../middleware/verifyRoleAccess.js";
 import { PermissionMap } from '../../config/constants.js';
 import * as productController from "../../controllers/productController.js";
@@ -25,6 +25,13 @@ router.get("/catalogue", productController.getProducts);
 
 router.get("/details", productController.getProductDetails);
 
-router.get("/units", productController.getProductUnits)
+router.get("/units", productController.getProductUnits);
+
+router.put("/update-product/:product_id", 
+  verifyRoleAccess(PermissionMap.INVENTORY.EDIT), 
+  upload.fields([{name: 'image', maxCount: 1}]),  
+  validator(updateProductSchema),
+  productController.updateProduct
+)
 
 export default router;

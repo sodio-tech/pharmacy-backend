@@ -8,3 +8,4 @@ export type { Supplier } from './addSupplierValidator.js';
 export type {PurchaseOrder} from './addPurchaseOrder.js';
 export type {Product } from './newProductValidator.js'
 export type {OrderFulfillment} from './orderFulfilledValidator.js'
+export type {UpdateProduct} from './updateProductValidator.js'

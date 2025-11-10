@@ -1,7 +1,7 @@
 import knex from "../config/database.js";
 import dotenv from "dotenv";
 dotenv.config();
-import { Product } from "../middleware/schemas/types.js";
+import { Product, UpdateProduct } from "../middleware/schemas/types.js";
 import * as s3Service from "./s3Service.js";
 import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
 
@@ -125,4 +125,40 @@ export const getProductUnitsService = async () => {
     .select("id", "unit")   
 
   return {product_units};
+}
+
+export const updateProductService = async (admin, product_id: number, updateParams: UpdateProduct & {image: any}) => {
+  const product = await knex('products')
+    .where('id', product_id)
+    .andWhere("pharmacy_id", admin.pharmacy_id)
+    .first();
+
+  if (!product) {
+    return {error: "Product not found"};
+  }
+
+  let image: string = s3Service.getFileUrl(product.image);
+  if (updateParams.image) {
+    const slug = s3Service.slugify(updateParams.product_name ?? product.product_name);
+    image = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
+
+    const {url} = await s3Service.uploadFile(updateParams.image.buffer, image, updateParams.image.mimetype, true);
+    if (!url) {
+      throw new Error("Failed to upload image");
+    }
+    await s3Service.deleteFile(s3Service.getFileUrl(product.image));
+    updateParams.image = image;
+    image = url;
+  }
+
+  const [ updated ] = await knex('products')
+    .where('id', product_id)
+    .andWhere("pharmacy_id", admin.pharmacy_id)
+    .update(updateParams)
+    .returning("*");
+
+  return {
+    ...updated,
+    image
+  };
 }

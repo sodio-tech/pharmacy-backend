@@ -16,6 +16,8 @@ import supplierRoutes from "./routes/v1/supplierRoutes.js";
 import productRoutes from "./routes/v1/productRoutes.js"
 import orderRoutes from "./routes/v1/orderRoutes.js"
 import inventoryRoutes from "./routes/v1/inventoryRoutes.js"
+import salesRoutes from "./routes/v1/salesRoutes.js"
+import customerRoutes from "./routes/v1/customerRoutes.js"
 
 dotenv.config();
 
@@ -63,6 +65,8 @@ app.use("/api/v1/supplier", supplierRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/inventory", inventoryRoutes);
+app.use("/api/v1/sales", salesRoutes);
+app.use("/api/v1/customer", customerRoutes);
 
 app.use(errorMiddleware);
 

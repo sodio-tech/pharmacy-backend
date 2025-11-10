@@ -36,3 +36,4 @@ export {addPurchaseOrderValidator} from "./schemas/addPurchaseOrder.js"
 export {newProductSchema} from './schemas/newProductValidator.js'
 export {orderFulfillmentSchema} from './schemas/orderFulfilledValidator.js'
 export {updateProductSchema} from './schemas/updateProductValidator.js'
+export {newCustomerSchema} from './schemas/customerValidator.js'

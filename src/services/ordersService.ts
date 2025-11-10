@@ -164,6 +164,7 @@ export const listPurchaseOrdersService = async (pharmacy_id: number, pagination)
       "purchase_orders.id",
       "purchase_orders.purchase_date",
       "purchase_orders.pharmacy_id",
+      "purchase_orders.pharmacy_branch_id",
       "purchase_orders.purchase_amount",
       "purchase_orders.expected_delivery_date",
       "purchase_orders.fulfilled_on",

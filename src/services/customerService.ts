@@ -56,9 +56,10 @@ export const getCustomersService = async (params: Customer & {page?: number, lim
   };
 }
 
-export const getCustomerDetailsService = async (customer_id: string) => {
+export const getCustomerDetailsService = async (customer_id: string, user) => {
   const customer = await knex("customers")
     .where("id", customer_id)
+    .andWhere('pharmacy_id', user.pharmacy_id)
     .first();
 
   if (!customer) {
@@ -71,13 +72,14 @@ export const getCustomerDetailsService = async (customer_id: string) => {
   return customer;
 }
 
-export const getPrescriptionsService = async (params) => {
+export const getPrescriptionsService = async (params, user) => {
   let {page, limit, search, start_date, end_date} = params;
   const offset = limit * (page - 1);
   if (search) search = normaliseSearchText(search);
   
   const _prescriptions = knex("prescriptions")
     .leftJoin("customers", "customers.id", "prescriptions.customer_id")
+    .where('customers.pharmacy_id', user.pharmacy_id)
     .modify((qb) => {
       if(search) {
         qb.andWhere( builder => 

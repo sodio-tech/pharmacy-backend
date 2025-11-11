@@ -152,10 +152,27 @@ export const getGeneralSupplierAnalyticsService = async (pharmacy_id: number) =>
         )::integer
         as completed_deliveries`
       ),
+      knex.raw(`
+        COUNT(
+          CASE WHEN date_trunc('month', purchase_date) = date_trunc('month', CURRENT_DATE)
+          THEN 1 END
+        )::integer as this_month_orders
+      `),
+      knex.raw(`
+        COUNT(
+          CASE WHEN date_trunc('month', purchase_date) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+          THEN 1 END
+        )::integer as last_month_orders
+      `)
     )
     .first();
     
   const [supplierStats, purchaseStats] = await Promise.all([_supplierStats, _purchaseStats]);
+
+  const percentChange = (current: number, prev: number) => {
+    if (prev === 0) return current === 0 ? 0 : 100;
+    return ((current - prev) / prev) * 100;
+  };
 
   let percentageIncrease: number | null = null;
   const thisMonth = purchaseStats.spending_this_month ?? 0;
@@ -176,6 +193,8 @@ export const getGeneralSupplierAnalyticsService = async (pharmacy_id: number) =>
       percentage_increase_from_prev_month: percentageIncrease,
     },
     on_time_delivery_rate: onTimeDeliveryRate,
+    this_month_orders: purchaseStats.this_month_orders ?? 0,
+    orders_percentage_change: percentChange(purchaseStats.this_month_orders ?? 0, purchaseStats.last_month_orders ?? 0),
   }
 }
 

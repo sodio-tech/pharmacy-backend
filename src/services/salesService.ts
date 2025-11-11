@@ -15,6 +15,7 @@ export const makeSaleService = async (user, data: Sale, action: "paid" | "draft"
   const _products = await knex('batches')
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.is_active', true)
+    .andWhere('batches.pharmacy_branch_id', data.branch_id)
     .whereIn('batches.product_id', prodIds)
     .select(
       'batches.product_id',

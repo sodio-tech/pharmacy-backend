@@ -138,3 +138,78 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     status: action,
   };
 }
+
+export const getSalesService = async (user, branch_id: number, params) => {
+  let { page, limit } = params;
+  page = Number(page);
+  limit = Number(limit);
+  const offset = limit * (page - 1);
+  const _sales = knex('sales')
+    .leftJoin('sale_items', 'sale_items.sale_id', 'sales.id')
+    .leftJoin('customers', 'customers.id', 'sales.customer_id')
+    .leftJoin('prescriptions', 'prescriptions.sale_id', 'sales.id')
+    .leftJoin('payment_modes', 'payment_modes.id', 'sales.payment_mode_id')
+    .where('sales.pharmacy_branch_id', branch_id)
+    .select(
+      'sales.id',
+      'payment_modes.name as payment_mode',
+      'sales.status',
+      'sales.total_amount',
+      'sales.created_at',
+      knex.raw(`
+        json_build_object(
+          'doctor_name', prescriptions.doctor_name,
+          'doctor_contact', prescriptions.doctor_contact,
+          'notes', prescriptions.notes,
+          'prescription_link', prescriptions.prescription_link
+        ) as prescription
+      `),
+      knex.raw(`
+        json_build_object(
+          'id', customers.id,
+          'name', customers.name,
+          'phone_number', customers.phone_number,
+          'email', customers.email
+        ) as customer
+      `),
+      knex.raw(`
+        json_agg_strict(
+          jsonb_build_object(
+            'product_id', sale_items.product_id,
+            'quantity', sale_items.quantity,
+            'price', sale_items.price,
+            'gst_rate', sale_items.gst_rate
+          )
+        ) as sale_items
+      `),
+    )
+    .orderBy('sales.created_at', 'desc')
+    .groupBy(
+      'sales.id',
+      'payment_modes.name',
+      'customers.id',
+      'sales.status',
+      'sales.total_amount',
+      'sales.created_at',
+      'prescriptions.doctor_name',
+      'prescriptions.doctor_contact',
+      'prescriptions.notes',
+      'prescriptions.prescription_link'
+    )
+
+  const {total = 0}: any = await _sales.clone().clearSelect().clearOrder().clearGroup()
+    .countDistinct('sales.id as total')
+    .first();
+
+  const sales = await _sales
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    sales,
+    total: Number(total),
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit)
+  }
+}

@@ -21,4 +21,6 @@ router.post(
 
 router.get("/payment-modes", salesController.getPaymentModes);
 
+router.get("/list/:branch_id", salesController.getSales);
+
 export default router;

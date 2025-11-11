@@ -1,12 +1,13 @@
 import knex from "../config/database.js";
 import {Sale} from "../middleware/schemas/types.js";
+import * as s3Service from "./s3Service.js";
 
 export const getPaymentModesService = async () => {
   const result = await knex('payment_modes').select('id', 'name', 'description');
   return result;
 }
 
-export const makeSaleService = async (user, data: Sale, action: "paid" | "draft" | "review") => {
+export const makeSaleService = async (user, data: Sale & {prescription: any}, action: "paid" | "draft" | "review") => {
   const prodIds = data.cart.map(item => item.product_id);
   let receiptProducts = Object.fromEntries(
     data.cart.map(({product_id, ...rest}) => [product_id, {...rest, price: 0, gst_rate: 0}])
@@ -16,6 +17,7 @@ export const makeSaleService = async (user, data: Sale, action: "paid" | "draft"
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.is_active', true)
     .andWhere('batches.pharmacy_branch_id', data.branch_id)
+    .andWhere('batches.expiry_date', '>=', new Date())
     .whereIn('batches.product_id', prodIds)
     .select(
       'batches.product_id',
@@ -43,6 +45,9 @@ export const makeSaleService = async (user, data: Sale, action: "paid" | "draft"
     )
     .orderBy('batches.expiry_date', 'asc')
 
+  if (_products.length === 0) {
+    return {error: "No stock available"};
+  }
   const products: Record<string, Record<string, any>> = Object.fromEntries(
     _products.map(({product_id, ...rest}) => [product_id, rest])
   );
@@ -103,6 +108,24 @@ export const makeSaleService = async (user, data: Sale, action: "paid" | "draft"
             price: product.price,
             gst_rate: product.gst_rate,
           })))
+
+        if (data.prescription && data.customer_id) {
+          let file: string = s3Service.getFileUrl(data.prescription);
+          const customer = await trx('customers').where('id', data.customer_id).first();
+          const slug = s3Service.slugify(customer.name);
+          file = `pharmacy_id_${user.pharmacy_id}/public/products/${slug}`;
+          try {
+            await s3Service.uploadFile(data.prescription.buffer, file, data.prescription.mimetype, true);
+            await trx('prescriptions').insert({
+              sale_id: sale.id,
+              ... data.doctor_name && { doctor_name: data.doctor_name },
+              ... data.doctor_contact && { doctor_contact: data.doctor_contact },
+              ... data.prescription_notes && { notes: data.prescription_notes },
+              prescription_link: file,
+            });
+          }
+          catch (e) {}
+        }
       })
 
     }

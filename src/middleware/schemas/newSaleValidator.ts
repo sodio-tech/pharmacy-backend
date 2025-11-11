@@ -2,6 +2,9 @@ import z from '../../config/zodConfig.js';
 
 export const newSaleSchema = z.object({
   customer_id: z.coerce.number().optional(),
+  prescription_notes: z.string().optional(),
+  doctor_name: z.string().optional(),
+  doctor_contact: z.string().optional(),
   branch_id: z.coerce.number().optional(),
   payment_mode: z.coerce.number().optional(),
   cart: z.string()

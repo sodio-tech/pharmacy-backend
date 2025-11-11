@@ -18,4 +18,6 @@ router.get("/expiring-stock/:branch_id", verifyBranchAccess(), inventoryControll
 
 router.get("/batches/:branch_id", verifyBranchAccess(), inventoryController.getBatches);
 
+router.get("/branch-stock/:branch_id", verifyBranchAccess(), inventoryController.getBranchStock);
+
 export default router;

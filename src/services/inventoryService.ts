@@ -252,3 +252,71 @@ export const getBatchesService = async (pharmacy_id: number, branch_id: number, 
   };
 
 }
+
+export const getBranchStockService = async (pharmacy_id: number, branch_id: number, params) => {
+  let { page, limit, search, product_category_id } = params;
+  search = normaliseSearchText(search)
+  const offset = limit * (page - 1);
+  console.log(branch_id)
+  const _branchStock = knex('batches')
+    .leftJoin('branch_product_settings', 'branch_product_settings.product_id', 'batches.product_id')
+    .leftJoin('products', 'products.id', 'batches.product_id')
+    .where('batches.pharmacy_branch_id', branch_id)
+    .modify((qb) => {
+      if(search) {
+        qb.andWhere( builder => 
+          builder.orWhereRaw(buildNormalizedSearch('products.product_name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('products.generic_name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('products.manufacturer'), [`%${search}%`])
+        )
+      }
+      if(product_category_id) {
+        qb.andWhere("product_categories.id", product_category_id)
+      }
+    })
+    .select(
+      'batches.product_id',
+      'products.product_name',
+      'products.generic_name',
+      'products.image',
+      'products.unit_price',
+      'products.gst_rate',
+      'products.pack_size',
+      knex.raw(`SUM(batches.available_stock)::integer as available_stock`),
+      knex.raw(`MIN(COALESCE(branch_product_settings.min_stock, products.min_stock)) as min_stock`),
+      knex.raw(`MIN(COALESCE(branch_product_settings.max_stock, products.max_stock)) as max_stock`),
+    )
+    .groupBy(
+      'batches.product_id', 
+      'products.product_name', 
+      'products.generic_name', 
+      'products.image',
+      'products.unit_price',
+      'products.gst_rate',
+      'products.pack_size'
+    )
+    .orderBy('batches.product_id', 'asc')
+
+  const countResult = await _branchStock.clone().clearSelect().clearOrder().clearGroup()
+    .countDistinct('batches.product_id as total')
+    .first();
+
+  const total = Number(countResult?.total ?? 0);
+
+  const branchStock = await _branchStock
+    .limit(limit)
+    .offset(offset);
+
+  for (const stock of branchStock) {
+    stock.image = getFileUrl(stock.image);
+  }
+
+  return { 
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit),
+    total,
+    branch_stock: branchStock
+  };
+}
+

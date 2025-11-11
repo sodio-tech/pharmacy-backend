@@ -44,3 +44,13 @@ export const getSales = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch sales", error.message, 500);
   }
 });
+
+export const getSalesGeneralAnalytics = controllerWrapper(async (req, res, next) => {
+  try {
+    const branch_id = req.user.pharmacy_branch_id || req.params.branch_id;
+    const result = await salesService.getSalesGeneralAnalyticsService(branch_id);
+    return res.success("Sales general analytics fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch sales general analytics", error.message, 500);
+  }
+});

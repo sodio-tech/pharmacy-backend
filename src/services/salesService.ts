@@ -214,3 +214,70 @@ export const getSalesService = async (user, branch_id: number, params) => {
     total_pages: Math.ceil(total / limit)
   }
 }
+
+export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
+  const [ salesStats ] = await knex('sales')
+    .where('pharmacy_branch_id', branch_id)
+    .andWhere('status', 'paid')
+    .select(
+      knex.raw(`
+        COUNT(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE)
+          THEN 1 END
+        )::integer as today_transactions
+      `),
+      knex.raw(`
+        COUNT(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day')
+          THEN 1 END
+        )::integer as yesterday_transactions
+      `),
+      knex.raw(`
+        SUM(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE)
+          THEN total_amount END
+        )::integer as today_earnings
+      `),
+      knex.raw(`
+        SUM(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day')
+          THEN total_amount END
+        )::numeric as yesterday_earnings
+      `),
+      knex.raw(`
+        AVG(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE)
+          THEN total_amount END
+        )::integer as today_avg_earnings
+      `),
+      knex.raw(`
+        AVG(
+          CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day')
+          THEN total_amount END
+        )::integer as yesterday_avg_earnings
+      `),
+    )
+
+  const today_earnings = salesStats.today_earnings ?? 0;
+  const yesterday_earnings = salesStats.yesterday_earnings ?? 0;
+  const today_avg_earnings = salesStats.today_avg_earnings ?? 0;
+  const yesterday_avg_earnings = salesStats.yesterday_avg_earnings ?? 0;
+  const today_transactions = salesStats.today_transactions ?? 0;
+  const yesterday_transactions = salesStats.yesterday_transactions ?? 0;
+
+  const percentChange = (today: number, yesterday: number) => {
+    if (yesterday === 0) return today === 0 ? 0 : 100;
+    return ((today - yesterday) / yesterday) * 100;
+  };
+
+  return {
+    today_earnings,
+    earnings_change_percent: percentChange(today_earnings, yesterday_earnings),
+
+    today_avg_earnings,
+    avg_earnings_change_percent: percentChange(today_avg_earnings, yesterday_avg_earnings),
+
+    today_transactions,
+    transactions_change_percent: percentChange(today_transactions, yesterday_transactions),
+  };
+}

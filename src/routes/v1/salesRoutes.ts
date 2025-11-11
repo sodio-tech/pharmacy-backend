@@ -23,4 +23,6 @@ router.get("/payment-modes", salesController.getPaymentModes);
 
 router.get("/list/:branch_id", salesController.getSales);
 
+router.get("/general-analytics/:branch_id", salesController.getSalesGeneralAnalytics);
+
 export default router;

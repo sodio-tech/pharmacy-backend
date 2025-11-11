@@ -7,7 +7,11 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('product_id').notNullable().references('id').inTable('products');
     table.integer('quantity').notNullable();
     table.integer('price').notNullable();
+    table.integer('gst_rate').notNullable();
     table.timestamps(true, true);
+
+    table.index('sale_id');
+    table.index('product_id');
   })
 }
 

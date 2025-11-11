@@ -3,7 +3,8 @@ import {Customer} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 
 export const createNewCustomerService = async (data: Customer) => {
-  return await knex("customers").insert(data).returning("*");
+  const res = await knex("customers").insert(data).returning("*")
+  return res[0] || null;
 }
 
 export const getCustomersService = async (params: Customer & {page?: number, limit?: number}) => {

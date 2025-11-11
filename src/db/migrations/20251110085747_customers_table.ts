@@ -9,6 +9,9 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('age').unsigned();
     table.enum('gender', ['male', 'female', 'other']);
     table.timestamps(true, true);
+
+    table.index('name');
+    table.index('phone_number');
   })
 }
 

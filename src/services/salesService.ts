@@ -118,6 +118,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
             await s3Service.uploadFile(data.prescription.buffer, file, data.prescription.mimetype, true);
             await trx('prescriptions').insert({
               sale_id: sale.id,
+              ... data.customer_id && { customer_id: data.customer_id },
               ... data.doctor_name && { doctor_name: data.doctor_name },
               ... data.doctor_contact && { doctor_contact: data.doctor_contact },
               ... data.prescription_notes && { notes: data.prescription_notes },

@@ -17,7 +17,6 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.is_active', true)
     .andWhere('batches.pharmacy_branch_id', data.branch_id)
-    .andWhere('batches.expiry_date', '>=', new Date())
     .whereIn('batches.product_id', prodIds)
     .select(
       'batches.product_id',
@@ -32,7 +31,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
             'id', batches.id,
             'available_stock', batches.available_stock
           )
-        ) as batches
+        ) FILTER (WHERE batches.expiry_date >= CURRENT_DATE) as batches
       `)
     )
     .groupBy(
@@ -41,9 +40,8 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
       'products.pack_size',
       'products.gst_rate',
       'products.product_name',
-      'batches.expiry_date'
     )
-    .orderBy('batches.expiry_date', 'asc')
+    .orderByRaw('MIN(batches.expiry_date) ASC')
 
   if (_products.length === 0) {
     return {error: "No stock available"};
@@ -71,7 +69,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
       await knex.transaction(async (trx) => {
         let batchUpdates: any[] = [];
         Object.entries(receiptProducts).forEach(([product_id, product]) => {
-          const batches = products[product_id]?.batches;
+          const batches = products[product_id]?.batches || [];
           let quantity = product.quantity;
           for (const batch of batches) {
             if (quantity === 0) break;

@@ -257,7 +257,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
   let { page, limit, search, product_category_id } = params;
   search = normaliseSearchText(search)
   const offset = limit * (page - 1);
-  console.log(branch_id)
+
   const _branchStock = knex('batches')
     .leftJoin('branch_product_settings', 'branch_product_settings.product_id', 'batches.product_id')
     .leftJoin('products', 'products.id', 'batches.product_id')
@@ -282,7 +282,13 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       'products.unit_price',
       'products.gst_rate',
       'products.pack_size',
-      knex.raw(`SUM(batches.available_stock)::integer as available_stock`),
+      knex.raw(`
+        SUM( 
+          CASE WHEN batches.is_active = true
+          AND batches.expiry_date >= CURRENT_DATE 
+          THEN batches.available_stock END
+        )::integer as available_stock
+      `),
       knex.raw(`MIN(COALESCE(branch_product_settings.min_stock, products.min_stock)) as min_stock`),
       knex.raw(`MIN(COALESCE(branch_product_settings.max_stock, products.max_stock)) as max_stock`),
     )
@@ -295,6 +301,12 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       'products.gst_rate',
       'products.pack_size'
     )
+    .havingRaw(`
+      SUM(
+        CASE WHEN batches.expiry_date >= CURRENT_DATE AND batches.is_active = true
+        THEN batches.available_stock ELSE 0 END
+      ) > 0
+    `)
     .orderBy('batches.product_id', 'asc')
 
   const countResult = await _branchStock.clone().clearSelect().clearOrder().clearGroup()

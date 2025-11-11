@@ -4,7 +4,8 @@ import { StatusCodes } from 'http-status-codes'
 
 export const createNewCustomer = controllerWrapper(async (req, res, next) => {
   try {
-    const result = await customerService.createNewCustomerService(req.body);
+    const user = req.user;
+    const result = await customerService.createNewCustomerService(req.body, user);
     return res.success("user_created", result, 200);
   } catch (error: any) {
     return res.error("user_creation_failed", error.message, 500);

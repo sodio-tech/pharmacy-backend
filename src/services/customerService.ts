@@ -3,7 +3,8 @@ import {Customer} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 import {getFileUrl} from './s3Service.js'
 
-export const createNewCustomerService = async (data: Customer) => {
+export const createNewCustomerService = async (data: Customer & {pharmacy_id: number}, user) => {
+  data.pharmacy_id = user.pharmacy_id;
   const res = await knex("customers").insert(data).returning("*")
   return res[0] || null;
 }

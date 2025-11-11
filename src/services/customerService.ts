@@ -8,7 +8,7 @@ export const createNewCustomerService = async (data: Customer) => {
   return res[0] || null;
 }
 
-export const getCustomersService = async (params: Customer & {page?: number, limit?: number}) => {
+export const getCustomersService = async (params: Customer & {page?: number, limit?: number}, user) => {
   let {page = 1, limit = 10, name, phone_number, age, gender } = params;
   const offset = (page - 1) * limit;
   if (name) {
@@ -19,6 +19,7 @@ export const getCustomersService = async (params: Customer & {page?: number, lim
   }
 
   const query = knex("customers")
+    .where('pharmacy_id', user.pharmacy_id)
     .modify((qb) => {
       if(params.name) {
         qb.andWhereRaw(buildNormalizedSearch('customers.name'), [`%${name}%`])

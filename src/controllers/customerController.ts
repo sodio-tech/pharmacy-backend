@@ -13,7 +13,7 @@ export const createNewCustomer = controllerWrapper(async (req, res, next) => {
 
 export const getCustomers = controllerWrapper(async (req, res, next) => {
   try {
-    const result = await customerService.getCustomersService(req.query);
+    const result = await customerService.getCustomersService(req.query, req.user);
     return res.success("customers_retrieved", result, 200);
   } catch (error: any) {
     return res.error("customer_retrieval_failed", error.message, 500);

@@ -28,3 +28,15 @@ export const getCustomerDetails = controllerWrapper(async (req, res, next) => {
     return res.error("customer_details_retrieval_failed", error.message, 500);
   }
 });
+
+export const getPrescriptions = controllerWrapper(async (req, res, next) => {
+  try {
+    const params = req.query;
+    params.page = Number(params.page || 1);
+    params.limit = Number(params.limit || 10);
+    const result = await customerService.getPrescriptionsService(params);
+    return res.success("prescriptions_retrieved", result, 200);
+  } catch (error: any) {
+    return res.error("prescriptions_retrieval_failed", error.message, 500);
+  }
+});

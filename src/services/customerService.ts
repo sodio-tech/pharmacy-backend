@@ -1,6 +1,7 @@
 import knex from "../config/database.js";
 import {Customer} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
+import {getFileUrl} from './s3Service.js'
 
 export const createNewCustomerService = async (data: Customer) => {
   const res = await knex("customers").insert(data).returning("*")
@@ -66,5 +67,56 @@ export const getCustomerDetailsService = async (customer_id: string) => {
   delete customer.updated_at;   
 
   return customer;
+}
+
+export const getPrescriptionsService = async (params) => {
+  let {page, limit, search, start_date, end_date} = params;
+  const offset = limit * (page - 1);
+  if (search) search = normaliseSearchText(search);
+  
+  const _prescriptions = knex("prescriptions")
+    .leftJoin("customers", "customers.id", "prescriptions.customer_id")
+    .modify((qb) => {
+      if(search) {
+        qb.andWhere( builder => 
+          builder.orWhereRaw(buildNormalizedSearch('customers.name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('prescriptions.doctor_name'), [`%${search}%`])
+        )
+      } 
+      if (start_date && end_date) { 
+        qb.andWhere('prescriptions.created_at', '>=', start_date)
+          .andWhere('prescriptions.created_at', '<=', end_date)
+      }
+    })
+    .select(
+      "prescriptions.id as prescription_id",
+      "customers.id as customer_id",
+      "customers.name as customer_name",
+      "prescriptions.doctor_name",
+      "prescriptions.prescription_link",
+      "prescriptions.notes as prescription_notes",
+      "prescriptions.created_at"
+    )
+    .orderBy("prescriptions.created_at", "desc")
+
+  const {total = 0}: any = await _prescriptions.clone().clearSelect().clearOrder()
+    .count('prescriptions.id as total')
+    .first();
+
+  const prescriptions = await _prescriptions
+    .limit(limit)
+    .offset(offset);
+
+  prescriptions.forEach((prescription) => {
+    prescription.prescription_link = getFileUrl(prescription.prescription_link);
+  });
+
+  return { 
+    prescriptions,
+    total,
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit)
+  };
 }
 

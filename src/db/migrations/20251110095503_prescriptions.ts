@@ -4,6 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('prescriptions', table => {
     table.increments('id').primary();
     table.integer('sale_id').notNullable().references('id').inTable('sales');
+    table.integer('customer_id').references('id').inTable('customers');
     table.string('prescription_link').notNullable();
     table.string('doctor_name');
     table.integer('doctor_contact');

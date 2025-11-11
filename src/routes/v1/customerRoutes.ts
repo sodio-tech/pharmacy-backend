@@ -15,4 +15,6 @@ router.get("/customer-list", customerController.getCustomers);
 
 router.get("/details/:customer_id", customerController.getCustomerDetails);
 
+router.get("/prescriptions", customerController.getPrescriptions);
+
 export default router;

@@ -23,21 +23,6 @@ export const getCategoriesService = async (params) => {
 export const addNewProductService = async (admin, req) => {
   const product: Product = req.body;
   let images = req.files?.image
-  const barOrQrAlreadyExists = await knex("products")
-    .modify((qb) => {
-      if(product.barcode) {
-        qb.orWhere("barcode", product.barcode)
-      }
-      if(product.qrcode) {
-        qb.orWhere("qrcode", product.qrcode)
-      }
-    })
-    .where("pharmacy_id", admin.pharmacy_id)
-    .first();
-
-  if (barOrQrAlreadyExists) {
-    return {error: "Barcode or QR code already exists"};
-  }
 
   const insertion: any = {
     ...product,

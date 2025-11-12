@@ -16,6 +16,9 @@ export const addNewProduct = controllerWrapper(async (req, res, next) => {
   try {
     const admin = req.user;
     const result = await productService.addNewProductService(admin, req);
+    if (result.error) {
+      return res.error(result.error, [], 500);
+    }
     return res.success("product added to inventory", result, 200);
   } catch (error: any) {
     return res.error("Failed to add product", error.message, 500);

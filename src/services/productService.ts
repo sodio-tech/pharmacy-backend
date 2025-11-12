@@ -32,13 +32,12 @@ export const addNewProductService = async (admin, req) => {
     pharmacy_id: admin.pharmacy_id
   }
 
-  let attachmentFileName: null | string = null;
   let  main_image: string | null = null;
   let urls: any[] = [];
   if (images.length > 0) {
     urls = await Promise.all(images.map(async (image) => {
       const slug = s3Service.slugify(product.product_name);
-      attachmentFileName = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
+      const attachmentFileName = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
       insertion.image = attachmentFileName;
       const {url} = await s3Service.uploadFile(image.buffer, attachmentFileName, image.mimetype, true);
       return {url, attachmentFileName};

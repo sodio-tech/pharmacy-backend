@@ -4,7 +4,8 @@ import { StatusCodes } from 'http-status-codes'
 
 export const getCategories = controllerWrapper(async (req, res, next) => {
   try {
-    const result = await productService.getCategoriesService();
+    const params = req.query;
+    const result = await productService.getCategoriesService(params);
     return res.success("Categories fetched", result, 200);
   } catch (error: any) {
     return res.error("Failed to fetch categories", error.message, 500);

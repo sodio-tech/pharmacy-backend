@@ -5,8 +5,15 @@ import { Product, UpdateProduct } from "../middleware/schemas/types.js";
 import * as s3Service from "./s3Service.js";
 import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
 
-export const getCategoriesService = async () => {
+export const getCategoriesService = async (params) => {
+  let {search} = params;
+  search = normaliseSearchText(search);
   const categories = await knex("product_categories")
+    .modify((qb) => {
+      if(search) {
+        qb.andWhereRaw(buildNormalizedSearch('product_categories.category_name'), [`%${search}%`])
+      }
+    })
     .select("id", "category_name")
     .orderBy("category_name", "asc");
 

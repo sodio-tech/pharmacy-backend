@@ -17,7 +17,7 @@ export const makeSale = controllerWrapper(async (req, res, next) => {
     if (result.error) {
       return res.error(result.error, [], 400);
     }
-    return res.success("Branch created", result, 200);
+    return res.success("Sale completed", result, 200);
   } catch (error: any) {
     return res.error("Failed to log sale", error.message, 500);
   }

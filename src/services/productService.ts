@@ -22,6 +22,9 @@ export const getCategoriesService = async (params) => {
 
 export const addNewProductService = async (admin, req) => {
   const product: Product = req.body;
+  product.product_category_id = typeof product.product_category_id === 'number' 
+    ? product.product_category_id 
+    : product.product_category_id[0]!;
   let images = req.files?.image
 
   const insertion: any = {

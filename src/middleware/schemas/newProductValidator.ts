@@ -24,16 +24,19 @@ export const newProductSchema = z.object({
 
       return res !== undefined;
     }, { message: 'Invalid unit' }),
-  product_category_id: z.coerce.number()
-    .refine(async val => {
-      const res = await knex('product_categories')
-        .select('id')
-        .where({id: val})
-        .first();
-
-      return res !== undefined;
-    }, { message: 'Invalid category' }),
-
+  product_category_id: z.union([ 
+    z.coerce.number(), 
+    z.string()
+      .transform((str, ctx) => {
+        try {
+          return JSON.parse(str)
+        } catch (e) {
+          ctx.addIssue({ code: 'custom', message: 'Invalid JSON'})
+          return z.NEVER
+        }
+      })
+      .pipe(z.array(z.number()))
+  ]),
   requires_prescription: z.coerce.boolean().optional(),
   description: z.string().optional(),
   barcode: z.string().optional(),

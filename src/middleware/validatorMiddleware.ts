@@ -12,7 +12,7 @@ export const validator = (schema, property = "body") => {
         const errors = fromError(error);
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: errors.message.replace(/^Validation error:\s*/, ''),
           errors: errors.details
         });
       }

@@ -3,10 +3,10 @@ import knex from '../../config/database.js'
 
 export const newProductSchema = z.object({
   product_name: z.string()
-    .min(1, {error: 'Product name is required'}),
+    .min(2, 'Product name is required'),
 
   generic_name: z.string()
-    .min(1, {error: 'Generic name is required'}),
+    .min(2, {error: 'Generic name is required'}),
 
   brand_name: z.string().optional(),
 

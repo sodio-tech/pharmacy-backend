@@ -16,7 +16,7 @@ router.get("/categories", productController.getCategories);
 
 router.post("/new-product", 
   verifyRoleAccess(PermissionMap.INVENTORY.EDIT), 
-  upload.fields([{name: 'image', maxCount: 1}]),  
+  upload.fields([{name: 'image', maxCount: 10}]),  
   validator(newProductSchema),
   productController.addNewProduct
 )

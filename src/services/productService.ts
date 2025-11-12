@@ -22,20 +22,26 @@ export const getCategoriesService = async (params) => {
 
 export const addNewProductService = async (admin, req) => {
   const product: Product = req.body;
-  let image = req.files?.image?.[0];
+  let images = req.files?.image
   const insertion: any = {
     ...product,
     pharmacy_id: admin.pharmacy_id
   }
 
   let attachmentFileName: null | string = null;
-  if (image) {
-    const slug = s3Service.slugify(product.product_name);
-    attachmentFileName = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
-    insertion.image = attachmentFileName;
+  let  main_image: string | null = null;
+  let urls: any[] = [];
+  if (images.length > 0) {
+    urls = await Promise.all(images.map(async (image) => {
+      const slug = s3Service.slugify(product.product_name);
+      attachmentFileName = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
+      insertion.image = attachmentFileName;
+      const {url} = await s3Service.uploadFile(image.buffer, attachmentFileName, image.mimetype, true);
+      return {url, attachmentFileName};
+    }));
 
-    const {url} = await s3Service.uploadFile(image.buffer, attachmentFileName, image.mimetype, true);
-    image = url;
+    main_image = urls[0]?.url;
+    insertion.image = urls[0]?.attachmentFileName;
   }
 
   const result = await knex.transaction(async (trx) => {
@@ -43,9 +49,18 @@ export const addNewProductService = async (admin, req) => {
       .insert(insertion)
       .returning("*");
 
+    const remainingImages = urls.slice(1);
+    if (remainingImages.length > 0) {
+      await trx("product_images")
+        .insert(remainingImages.map(({_url, attachmentFileName}) => ({
+          product_id: res.id,
+          image: attachmentFileName
+        })))
+    }
+
     return {
       ...res,
-      image
+      image: main_image
     };
   });
 
@@ -113,8 +128,27 @@ export const getProductDetailsService = async (user, product_id: string) => {
   const products = await knex("products")
     .leftJoin("product_categories", "products.product_category_id", "product_categories.id")
     .leftJoin("product_units", "products.unit", "product_units.id")
+    .leftJoin("product_images", "product_images.product_id", "products.id")
     .whereIn("products.id", product_ids)
     .andWhere("products.pharmacy_id", user.pharmacy_id)
+    .select(
+      "products.*",
+      "product_units.unit as unit",
+      knex.raw(`
+        json_agg_strict( 
+          product_categories.category_name
+        ) as product_categories
+      `),
+      knex.raw(`
+        json_agg_strict(
+          product_images.image 
+        ) as additional_images
+      `)
+    )
+    .groupBy(
+      "products.id",
+      "product_units.unit",
+    )
   
   products.forEach((product) => {
     delete product.created_at;
@@ -122,6 +156,7 @@ export const getProductDetailsService = async (user, product_id: string) => {
     delete product.product_category_id;
     delete product.pharmacy_id;
     product.image = s3Service.getFileUrl(product.image);
+    product.additional_images = product.additional_images.map(s3Service.getFileUrl);
   });
 
   return { products };

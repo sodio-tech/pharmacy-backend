@@ -1,5 +1,5 @@
 import knex from "../config/database.js";
-import {Customer} from "../middleware/schemas/types.js";
+import {Customer, CustomerDetails} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 import {getFileUrl} from './s3Service.js'
 
@@ -124,3 +124,19 @@ export const getPrescriptionsService = async (params, user) => {
   };
 }
 
+export const updateCustomerService = async (user, customer_id: number, data: CustomerDetails) => {
+  const updates = {
+    ...data.age && {age: data.age},
+    ...data.gender && {gender: data.gender},
+    ...data.name && {name: data.name},
+    ...data.phone_number && {phone_number: data.phone_number},
+  };
+
+  const [res] = await knex("customers")
+    .where("id", customer_id)
+    .andWhere('pharmacy_id', user.pharmacy_id)
+    .update(updates)
+    .returning("*");
+
+  return res;
+}

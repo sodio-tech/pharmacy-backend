@@ -25,7 +25,7 @@ const SalesService = {
       const [product_id, item] = cartItem;
       let price = item.quantity 
         * (item.pack_size ?? products[product_id]?.pack_size) 
-        * products[product_id]?.unit_price 
+        * products[product_id]?.selling_price
 
       total_before_tax += price;
       price = ( products[product_id]?.gst_rate / 100 ) * price + price;

@@ -279,9 +279,9 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       'products.product_name',
       'products.generic_name',
       'products.image',
-      'products.unit_price',
       'products.gst_rate',
       'products.pack_size',
+      knex.raw('products.selling_price * COALESCE(products.pack_size, 1) as unit_price'),
       knex.raw(`
         SUM( 
           CASE WHEN batches.is_active = true
@@ -296,7 +296,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       'products.product_name', 
       'products.generic_name', 
       'products.image',
-      'products.unit_price',
+      'products.selling_price',
       'products.gst_rate',
       'products.pack_size'
     )

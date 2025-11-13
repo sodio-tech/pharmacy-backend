@@ -96,7 +96,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
       'batches.product_id',
       'products.product_name',
       knex.raw('products.gst_rate::float as gst_rate'),
-      knex.raw('products.unit_price::float'),
+      knex.raw('COALESCE(products.selling_price, 0)::float as selling_price'),
       knex.raw('SUM(batches.available_stock)::integer as available_stock'),
       knex.raw('COALESCE(products.pack_size, 1) as pack_size'),
       knex.raw(`
@@ -110,7 +110,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     )
     .groupBy(
       'batches.product_id', 
-      'products.unit_price', 
+      'products.selling_price', 
       'products.pack_size',
       'products.gst_rate',
       'products.product_name',

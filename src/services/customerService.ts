@@ -130,6 +130,7 @@ export const updateCustomerService = async (user, customer_id: number, data: Cus
     ...data.gender && {gender: data.gender},
     ...data.name && {name: data.name},
     ...data.phone_number && {phone_number: data.phone_number},
+    ...data.email && {email: data.email},
   };
 
   const [res] = await knex("customers")

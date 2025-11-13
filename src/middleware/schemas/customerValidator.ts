@@ -8,6 +8,8 @@ export const newCustomerSchema = z.object({
   age: z.number().min(1, 'Age should be at least 18').max(100, 'Age should be less than 100').optional(),
 
   gender: z.enum(['male', 'female', 'other']).optional(),
+
+  email: z.email().optional(),
 })
   .refine(val => val.name || val.phone_number, {error: 'Either name or phone number is required'});
 

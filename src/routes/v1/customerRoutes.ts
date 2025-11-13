@@ -17,4 +17,6 @@ router.get("/details/:customer_id", customerController.getCustomerDetails);
 
 router.get("/prescriptions", customerController.getPrescriptions);
 
+router.put("/update-customer/:customer_id", customerController.updateCustomer);
+
 export default router;

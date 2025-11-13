@@ -285,7 +285,6 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       knex.raw(`
         SUM( 
           CASE WHEN batches.is_active = true
-          AND batches.expiry_date >= CURRENT_DATE 
           THEN batches.available_stock END
         )::integer as available_stock
       `),
@@ -303,7 +302,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
     )
     .havingRaw(`
       SUM(
-        CASE WHEN batches.expiry_date > CURRENT_DATE AND batches.is_active = true
+        CASE WHEN batches.is_active = true
         THEN batches.available_stock ELSE 0 END
       ) > 0
     `)
@@ -320,7 +319,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
     .offset(offset);
 
   for (const stock of branchStock) {
-    stock.image = getFileUrl(stock.image);
+    stock.image = stock.image && getFileUrl(stock.image);
   }
 
   return { 

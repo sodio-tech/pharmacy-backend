@@ -79,7 +79,7 @@ export const updataProfileService = async (user, data: NewProfile & {profile_pho
     }
     if (Object.keys(pharmacyUpdates).length > 0) {
       await trx("pharmacies")
-        .where("super_admin", user.pharmacy_id)
+        .where("super_admin", user.id)
         .update(pharmacyUpdates)
     }
   })

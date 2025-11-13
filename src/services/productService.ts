@@ -20,8 +20,13 @@ export const getCategoriesService = async (params) => {
   return { categories };
 };
 
-export const addNewProductService = async (admin, req) => {
+export const addNewProductService = async (admin, req, branch_id: number) => {
   const product: Product = req.body;
+  product.min_stock = 10;
+  delete product.branch_id;
+  const stock = product.stock;
+  delete product.stock;
+
   product.product_category_id = typeof product.product_category_id === 'number' 
     ? product.product_category_id 
     : product.product_category_id?.[0]!;
@@ -60,6 +65,20 @@ export const addNewProductService = async (admin, req) => {
           image: attachmentFileName
         })))
     }
+
+    await trx("branch_product_settings")
+      .insert({
+        pharmacy_branch_id: branch_id,
+        product_id: res.id,
+    })
+
+    await trx('batches')
+      .insert({
+        product_id: res.id,
+        pharmacy_branch_id: branch_id,
+        unit_cost: product.unit_price ?? 0,
+        ...stock && { available_stock: stock }
+    });
 
     return {
       ...res,
@@ -126,7 +145,7 @@ export const getProductsService = async (pharmacy_id: number, pagination) => {
   };    
 }
 
-export const getProductDetailsService = async (user, product_id: string) => {
+export const getProductDetailsService = async (user, product_id: string, branch_id: number) => {
   const product_ids = product_id.split(",");
   const products = await knex("products")
     .leftJoin("product_categories", "products.product_category_id", "product_categories.id")
@@ -152,14 +171,27 @@ export const getProductDetailsService = async (user, product_id: string) => {
       "products.id",
       "product_units.unit",
     )
+
+  const product_stock = await knex('batches')
+    .whereIn('product_id', product_ids)
+    .andWhere('pharmacy_branch_id', branch_id)
+    .select(
+      'product_id',
+      knex.raw(`
+        SUM(available_stock) as available_stock
+      `)
+    )
+    .groupBy('product_id')
   
+  let i = 0;
   products.forEach((product) => {
     delete product.created_at;
     delete product.updated_at;
     delete product.product_category_id;
     delete product.pharmacy_id;
-    product.image = s3Service.getFileUrl(product.image);
+    product.image = product.image && s3Service.getFileUrl(product.image);
     product.additional_images = product.additional_images.map(s3Service.getFileUrl);
+    product.stock = product_stock[i].available_stock
   });
 
   return { products };
@@ -173,6 +205,11 @@ export const getProductUnitsService = async () => {
 }
 
 export const updateProductService = async (admin, product_id: number, updateParams: UpdateProduct & {image: any}) => {
+  const stock = updateParams.stock;
+  const branch_id = updateParams.branch_id;
+  delete updateParams.stock;
+  delete updateParams.branch_id;
+
   const product = await knex('products')
     .where('id', product_id)
     .andWhere("pharmacy_id", admin.pharmacy_id)
@@ -182,7 +219,7 @@ export const updateProductService = async (admin, product_id: number, updatePara
     return {error: "Product not found"};
   }
 
-  let image: string = s3Service.getFileUrl(product.image);
+  let image: string | null = product.image && s3Service.getFileUrl(product.image);
   if (updateParams.image) {
     const slug = s3Service.slugify(updateParams.product_name ?? product.product_name);
     image = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;
@@ -195,12 +232,39 @@ export const updateProductService = async (admin, product_id: number, updatePara
     updateParams.image = image;
     image = url;
   }
+  else {
+    delete updateParams.image;
+  }
 
-  const [ updated ] = await knex('products')
-    .where('id', product_id)
-    .andWhere("pharmacy_id", admin.pharmacy_id)
-    .update(updateParams)
-    .returning("*");
+  const updated = await knex.transaction(async (trx) => {
+    let updated: any = {};
+    if (Object.keys(updateParams).length > 0) {
+      const [ updatedProduct ] = await trx('products')
+        .where('id', product_id)
+        .andWhere("pharmacy_id", admin.pharmacy_id)
+        .update(updateParams)
+        .returning("*");
+      
+      updated = updatedProduct;
+    }
+
+    if (stock) {
+      const anyBatch = await trx('batches')
+        .where({product_id, pharmacy_branch_id: branch_id})
+        .first();
+
+      if (anyBatch) {
+        const [updatedStock] = await trx('batches')
+          .where({product_id, pharmacy_branch_id: branch_id, id: anyBatch.id})
+          .update({ available_stock: stock }).returning("*");
+
+        updated.stock = updatedStock.available_stock;
+      }
+    }
+
+    return updated;
+
+  })
 
   return {
     ...updated,

@@ -15,7 +15,11 @@ export const getCategories = controllerWrapper(async (req, res, next) => {
 export const addNewProduct = controllerWrapper(async (req, res, next) => {
   try {
     const admin = req.user;
-    const result = await productService.addNewProductService(admin, req);
+    const branch_id = admin.pharmacy_branch_id || req.body.branch_id;
+    if (!branch_id) {
+      return res.error("Branch id is required", null, 400);
+    }
+    const result = await productService.addNewProductService(admin, req, branch_id);
     if (result.error) {
       return res.error(result.error, [], 500);
     }
@@ -42,7 +46,11 @@ export const getProducts = controllerWrapper(async (req, res, next) => {
 
 export const getProductDetails = controllerWrapper(async (req, res, next) => {
   try {
-    const result = await productService.getProductDetailsService(req.user, req.query.product_id);
+    const branch_id = req.user.pharmacy_branch_id || req.query.branch_id;
+    if (!branch_id) {
+      return res.error("Branch id is required", null, 400);
+    }
+    const result = await productService.getProductDetailsService(req.user, req.query.product_id, branch_id);
     return res.success("Product details fetched", result, 200);
   } catch (error: any) {
     return res.error("Failed to fetch product details", error.message, 500);
@@ -62,6 +70,7 @@ export const updateProduct = controllerWrapper(async (req, res, next) => {
   try {
     const admin = req.user;
     const updateParams = req.body;
+    updateParams.branch_id = admin.pharmacy_branch_id || req.body.branch_id;
     const product_id = req.params.product_id;
     const image = req.files?.image?.[0];
     updateParams.image = image;

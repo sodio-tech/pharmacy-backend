@@ -2,6 +2,8 @@ import z from '../../config/zodConfig.js';
 import knex from '../../config/database.js'
 
 export const newProductSchema = z.object({
+  branch_id: z.coerce.number().optional(),
+  stock: z.coerce.number().optional(),
   product_name: z.string()
     .min(1, 'Product name is required'),
 

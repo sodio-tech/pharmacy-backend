@@ -1,15 +1,88 @@
+import { Knex } from "knex";
 import knex from "../config/database.js";
 import {Sale} from "../middleware/schemas/types.js";
 import * as s3Service from "./s3Service.js";
+
+type CartItems = Record<string, {
+  price: number;
+  gst_rate: number;
+  quantity: number;
+  pack_size?: number | undefined;
+}>
+
+type Products = Record<string, Record<string, any>>;
+
 
 export const getPaymentModesService = async () => {
   const result = await knex('payment_modes').select('id', 'name', 'description');
   return result;
 }
 
+const SalesService = {
+  calculatePricing: (products: Products, cart: CartItems) => {
+    let total_before_tax = 0;
+    const totalAmount = Object.entries(cart).reduce((acc, cartItem) => { 
+      const [product_id, item] = cartItem;
+      let price = item.quantity 
+        * (item.pack_size ?? products[product_id]?.pack_size) 
+        * products[product_id]?.unit_price 
+
+      total_before_tax += price;
+      price = ( products[product_id]?.gst_rate / 100 ) * price + price;
+      cart[product_id]!.price = price;
+      cart[product_id]!.gst_rate = products[product_id]?.gst_rate;
+
+      return acc + price;
+    }, 0);
+
+    return {
+      total_before_tax,
+      totalAmount,
+      updatedCart: cart
+    };
+  },
+
+  updateBatchStock: async (trx: Knex.Transaction, cart: CartItems, products: Products) => {
+    let batchUpdates: any[] = [];
+    Object.entries(cart).forEach(([product_id, product]) => {
+      const batches = products[product_id]?.batches || [];
+      let quantity = product.quantity;
+      for (const batch of batches) {
+        if (batch.available_stock <= 0) continue;
+        const available_stock = batch.available_stock;
+        batch.available_stock -= Math.min(available_stock, quantity);
+        quantity -= Math.min(available_stock, quantity);
+      }
+      batchUpdates.push(batches);
+    })
+    batchUpdates = batchUpdates.flatMap(thing => thing);
+
+    for (const update of batchUpdates) {
+      await trx('batches')
+      .where('id', update.id)
+      .update({ available_stock: update.available_stock});
+    }
+  },
+
+  handlePrescription: async (trx: Knex.Transaction, sale_id: number, data: Sale & {prescription: any}, user) => {
+    let file: string = s3Service.getFileUrl(data.prescription);
+    const customer = await trx('customers').where('id', data.customer_id).first();
+    const slug = s3Service.slugify(customer.name);
+    file = `pharmacy_id_${user.pharmacy_id}/public/prescriptions/${slug}`;
+    await s3Service.uploadFile(data.prescription.buffer, file, data.prescription.mimetype, true);
+    await trx('prescriptions').insert({
+      sale_id,
+      ... data.customer_id && { customer_id: data.customer_id },
+      ... data.doctor_name && { doctor_name: data.doctor_name },
+      ... data.doctor_contact && { doctor_contact: data.doctor_contact },
+      ... data.prescription_notes && { notes: data.prescription_notes },
+      prescription_link: file,
+    });
+  }
+} as const;
+
 export const makeSaleService = async (user, data: Sale & {prescription: any}, action: "paid" | "draft" | "review") => {
-  const prodIds = data.cart.map(item => item.product_id);
-  let receiptProducts = Object.fromEntries(
+  let cart = Object.fromEntries(
     data.cart.map(({product_id, ...rest}) => [product_id, {...rest, price: 0, gst_rate: 0}])
   );
 
@@ -17,7 +90,8 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.is_active', true)
     .andWhere('batches.pharmacy_branch_id', data.branch_id)
-    .whereIn('batches.product_id', prodIds)
+    .andWhere('batches.expiry_date', '>=', new Date())
+    .whereIn('batches.product_id', Object.keys(cart))
     .select(
       'batches.product_id',
       'products.product_name',
@@ -42,6 +116,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
       'products.product_name',
     )
     .orderByRaw('MIN(batches.expiry_date) ASC')
+    .havingRaw(`SUM(batches.available_stock) > 0`)
 
   if (_products.length === 0) {
     return {error: "No stock available"};
@@ -50,43 +125,14 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     _products.map(({product_id, ...rest}) => [product_id, rest])
   );
 
-  let total_before_tax = 0;
-  const totalAmount = data.cart.reduce((acc, item) => { 
-    let price = item.quantity 
-      * (item.pack_size ?? products[item.product_id]?.pack_size) 
-      * products[item.product_id]?.unit_price 
-    
-    total_before_tax += price;
-    price = ( products[item.product_id]?.gst_rate/100 ) * price + price;
-    receiptProducts[item.product_id]!.price = price;
-    receiptProducts[item.product_id]!.gst_rate = products[item.product_id]?.gst_rate;
+  const {total_before_tax, totalAmount, updatedCart} = SalesService.calculatePricing(products, cart);
+  cart = updatedCart;
 
-    return acc + price;
-  }, 0);
-
-  if (action !== 'review') {
-    if (action === 'paid') {
-      await knex.transaction(async (trx) => {
-        let batchUpdates: any[] = [];
-        Object.entries(receiptProducts).forEach(([product_id, product]) => {
-          const batches = products[product_id]?.batches || [];
-          let quantity = product.quantity;
-          for (const batch of batches) {
-            if (quantity === 0) break;
-            const available_stock = batch.available_stock;
-            batch.available_stock -= Math.min(available_stock, quantity);
-            quantity -= Math.min(available_stock, quantity);
-          }
-          batchUpdates.push(batches);
-        })
-        batchUpdates = batchUpdates.flatMap(thing => thing);
-
-        for (const update of batchUpdates) {
-          await trx('batches')
-            .where('id', update.id)
-            .update({ available_stock: update.available_stock});
-        }
-          
+  let sale_id: null | number = null;
+  sale_id = await knex.transaction(async (trx) => {
+    if (action !== 'review') {
+      if (action === 'paid') {
+        await SalesService.updateBatchStock(trx, cart, products);
         const saleInsertion = {
           ...data.customer_id && {customer_id: data.customer_id},
           pharmacy_branch_id: data.branch_id,
@@ -99,7 +145,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
         const [sale] = await trx('sales').insert(saleInsertion).returning("*");
 
         await trx('sale_items')
-          .insert(Object.entries(receiptProducts).map(([product_id, product]) => ({
+          .insert(Object.entries(cart).map(([product_id, product]) => ({
             sale_id: sale.id,
             product_id,
             quantity: product.quantity,
@@ -108,30 +154,17 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
           })))
 
         if (data.prescription && data.customer_id) {
-          let file: string = s3Service.getFileUrl(data.prescription);
-          const customer = await trx('customers').where('id', data.customer_id).first();
-          const slug = s3Service.slugify(customer.name);
-          file = `pharmacy_id_${user.pharmacy_id}/public/products/${slug}`;
-          try {
-            await s3Service.uploadFile(data.prescription.buffer, file, data.prescription.mimetype, true);
-            await trx('prescriptions').insert({
-              sale_id: sale.id,
-              ... data.customer_id && { customer_id: data.customer_id },
-              ... data.doctor_name && { doctor_name: data.doctor_name },
-              ... data.doctor_contact && { doctor_contact: data.doctor_contact },
-              ... data.prescription_notes && { notes: data.prescription_notes },
-              prescription_link: file,
-            });
-          }
-          catch (e) {}
+          await SalesService.handlePrescription(trx, sale.id, data, user);
+          return sale.id;
         }
-      })
-
+      }
     }
-  }
+  })
+
 
   return {
-    products: Object.entries(receiptProducts).map(([id, product]) => ({...product, id})),
+    sale_id,
+    products: Object.entries(cart).map(([id, product]) => ({...product, id})),
     total_amt: totalAmount,
     total_before_tax,
     status: action,

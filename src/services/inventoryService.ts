@@ -303,7 +303,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
     )
     .havingRaw(`
       SUM(
-        CASE WHEN batches.expiry_date >= CURRENT_DATE AND batches.is_active = true
+        CASE WHEN batches.expiry_date > CURRENT_DATE AND batches.is_active = true
         THEN batches.available_stock ELSE 0 END
       ) > 0
     `)

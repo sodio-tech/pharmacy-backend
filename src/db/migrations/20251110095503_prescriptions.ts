@@ -7,7 +7,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('customer_id').references('id').inTable('customers');
     table.string('prescription_link').notNullable();
     table.string('doctor_name');
-    table.integer('doctor_contact');
+    table.string('doctor_contact');
     table.string('notes');
     table.timestamps(true, true);
   })

@@ -79,7 +79,7 @@ export const updateProduct = controllerWrapper(async (req, res, next) => {
       return res.error("Product id is required", null, 400);
     }
     const result = await productService.updateProductService(admin, product_id, updateParams);
-    return res.success("product added to inventory", result, 200);
+    return res.success("product info updated", result, 200);
   } catch (error: any) {
     return res.error("Failed to add product", error.message, 500);
   }

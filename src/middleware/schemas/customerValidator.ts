@@ -5,7 +5,7 @@ export const newCustomerSchema = z.object({
 
   phone_number: z.string().min(3, 'Phone number should have a minimum length of 3').optional(),
 
-  age: z.number().min(1, 'Age should be at least 18').optional(),
+  age: z.number().min(1, 'Age should be at least 18').max(100, 'Age should be less than 100').optional(),
 
   gender: z.enum(['male', 'female', 'other']).optional(),
 })

@@ -24,7 +24,7 @@ export const addNewProductService = async (admin, req) => {
   const product: Product = req.body;
   product.product_category_id = typeof product.product_category_id === 'number' 
     ? product.product_category_id 
-    : product.product_category_id[0]!;
+    : product.product_category_id?.[0]!;
   let images = req.files?.image
 
   const insertion: any = {
@@ -34,7 +34,7 @@ export const addNewProductService = async (admin, req) => {
 
   let  main_image: string | null = null;
   let urls: any[] = [];
-  if (images.length > 0) {
+  if (images?.length > 0) {
     urls = await Promise.all(images.map(async (image) => {
       const slug = s3Service.slugify(product.product_name);
       const attachmentFileName = `pharmacy_id_${admin.pharmacy_id}/public/products/${slug}`;

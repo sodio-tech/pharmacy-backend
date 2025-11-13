@@ -90,7 +90,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.is_active', true)
     .andWhere('batches.pharmacy_branch_id', data.branch_id)
-    .andWhere('batches.expiry_date', '>=', new Date())
+    // .andWhere('batches.expiry_date', '>=', new Date())
     .whereIn('batches.product_id', Object.keys(cart))
     .select(
       'batches.product_id',

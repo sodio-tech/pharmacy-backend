@@ -223,6 +223,9 @@ export const updateProductService = async (admin, product_id: number, updatePara
   const branch_id = updateParams.branch_id;
   delete updateParams.stock;
   delete updateParams.branch_id;
+  updateParams.product_category_id = typeof updateParams.product_category_id === 'number' 
+    ? updateParams.product_category_id 
+    : updateParams.product_category_id?.[0]!;
 
   const product = await knex('products')
     .where('id', product_id)

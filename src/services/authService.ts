@@ -62,6 +62,14 @@ export const createSuperAdminService = async(data: SignupForm) => {
     result.pharmacy_name = pharmacy.pharmacy_name;
     result.subscription_status = pharmacy.subscription_status;
 
+    console.log(result)
+    await trx("pharmacy_branches")
+      .insert({
+        pharmacy_id: pharmacy.id,
+        branch_name: data.branch_name || "Main Branch",
+      })
+      .returning("*")
+
     const res = [
       'password', 
       'created_at', 'updated_at', 

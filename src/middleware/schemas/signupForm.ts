@@ -39,7 +39,12 @@ export const signupForm = z.object({
   drug_license_number: z.string()
     .regex(/^[a-zA-Z0-9-]*$/, { message: 'Drug license number should only contain letters and numbers' })
     .refine(val => val.trim().length > 0, 'Drug license number cannot be empty')
-    .optional()
+    .optional(),
+
+  branch_name: z.string()
+    .min(3, 'Branch name should have a minimum length of 3')
+    .refine(val => val.trim().length > 0, 'Branch name cannot be empty')
+    .optional(),
 });
 
 // Type inference

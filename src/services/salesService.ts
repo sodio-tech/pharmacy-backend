@@ -279,37 +279,37 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
         SUM(
           CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE)
           THEN total_amount END
-        )::integer as today_earnings
+        )::float as today_earnings
       `),
       knex.raw(`
         SUM(
           CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day')
           THEN total_amount END
-        )::numeric as yesterday_earnings
+        )::float as yesterday_earnings
       `),
       knex.raw(`
         AVG(
           CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE)
           THEN total_amount END
-        )::integer as today_avg_earnings
+        )::float as today_avg_earnings
       `),
       knex.raw(`
         AVG(
           CASE WHEN date_trunc('day', created_at) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day')
           THEN total_amount END
-        )::integer as yesterday_avg_earnings
+        )::float as yesterday_avg_earnings
       `),
       knex.raw(`
         SUM(
           CASE WHEN date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)
           THEN total_amount END
-        )::integer as this_month_earnings
+        )::float as this_month_earnings
       `),
       knex.raw(`
         SUM(
           CASE WHEN date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
           THEN total_amount END
-        )::integer as last_month_earnings
+        )::float as last_month_earnings
       `),
     )
 

@@ -53,3 +53,13 @@ export const addEmployee = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to add Employee", error.message, 500);
   }
 });
+
+export const getDetails = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const result = await orgService.getDetailsService(user);
+    return res.success("Organization details fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch organization details", error.message, 500);
+  }
+});

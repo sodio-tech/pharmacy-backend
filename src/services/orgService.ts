@@ -96,3 +96,28 @@ export const addEmployeeService = async (admin, employee: Employee) => {
 
   return result;
 }
+
+export const getDetailsService = async (admin) => {
+  const result = await knex("pharmacies")
+    .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
+    .leftJoin('pharmacy_branch_employees', 'pharmacy_branches.id', 'pharmacy_branch_employees.pharmacy_branch_id')
+    .leftJoin('users', 'users.id', 'pharmacy_branch_employees.employee_id')
+    .where('pharmacies.id', admin.pharmacy_id)
+    .select(
+      knex.raw(`COUNT(DISTINCT pharmacy_branch_employees.id) as employees`),
+      knex.raw(`COUNT(DISTINCT pharmacy_branches.id) as branches`),
+      knex.raw(`
+        COUNT(
+          CASE WHEN users.role = ? THEN 1 END
+        ) as admin_count
+      `, [ROLES.ADMIN]),
+      knex.raw(`
+        COUNT(
+          CASE WHEN users.role = ? THEN 1 END
+        ) as pharmacist_count
+      `, [ROLES.PHARMACIST])
+    )
+    .first();
+
+  return result;
+}

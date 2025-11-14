@@ -136,7 +136,7 @@ export const getProductsService = async (pharmacy_id: number, pagination) => {
     )
     .orderBy("products.product_name", "asc");
 
-  const {total = 0}: any = await query.clone().clearSelect().clearOrder().count('products.id as total').first();
+  const {total = 0}: any = await query.clone().clearSelect().clearOrder().clearGroup().countDistinct('products.id as total').first();
 
   const products = await query
     .limit(limit)

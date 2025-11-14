@@ -23,4 +23,10 @@ router.get(
   orgController.userManagementDetails
 );
 
+router.get(
+  "/management-tools",   
+  verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT, PermissionMap.ORGANIZATION.VIEW), 
+  orgController.managementTools
+);
+
 export default router;

@@ -4,6 +4,8 @@ dotenv.config();
 import { ROLES } from "../config/constants.js";
 import { NewBranch, Employee } from "../middleware/schemas/types.js";
 import bcrypt from "bcryptjs"
+import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
+import * as s3Service from "./s3Service.js";
 
 export const addBranchService = async (admin, data: NewBranch) => {
   const [ result ] = await knex("pharmacy_branches")
@@ -138,4 +140,43 @@ export const userManagementDetailsService = async (admin) => {
     newusers: result.current_month_users - result.previous_month_users,
   }
   return stats
+}
+
+export const managementToolsService = async (admin, params) => {
+  let {role, search} = params;
+  search = normaliseSearchText(search);
+  const result = await knex("pharmacies")
+  .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
+  .join('pharmacy_branch_employees', 'pharmacy_branches.id', 'pharmacy_branch_employees.pharmacy_branch_id')
+  .join('users', 'users.id', 'pharmacy_branch_employees.employee_id')
+  .where('pharmacies.id', admin.pharmacy_id)
+  .modify((qb) => {
+    if(search) {
+      qb.andWhere( builder => 
+        builder.orWhereRaw(buildNormalizedSearch('users.fullname'), [`%${search}%`])
+          .orWhereRaw(buildNormalizedSearch('users.phone_number'), [`%${search}%`])
+          .orWhereRaw(buildNormalizedSearch('users.email'), [`%${search}%`])
+      )
+    }
+    if(role) {
+      qb.andWhere("users.role", ROLES[role])
+    }
+  })
+  .select(
+    'pharmacy_branch_employees.employee_id',
+    'pharmacy_branch_employees.pharmacy_branch_id',
+    'pharmacy_branches.branch_name',
+    'users.email',
+    'users.fullname',
+    'users.phone_number',
+    'users.role',
+    'users.profile_image',
+  )
+
+  for (const employee of result) {
+    employee.profile_image = employee.profile_image && s3Service.getFileUrl(employee.profile_image);
+    employee.role = ROLES[employee.role];
+  }
+
+  return {employees: result };
 }

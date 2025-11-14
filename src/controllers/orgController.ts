@@ -63,3 +63,14 @@ export const userManagementDetails = controllerWrapper(async (req, res, next) =>
     return res.error("Failed to fetch user management", error.message, 500);
   }
 });
+
+export const managementTools = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const filters = req.query;
+    const result = await orgService.managementToolsService(user, filters);
+    return res.success("Management tools fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch management tools", error.message, 500);
+  }
+});

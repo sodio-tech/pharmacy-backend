@@ -93,16 +93,16 @@ export const addNewProductService = async (admin, req, branch_id: number) => {
 };
 
 export const getProductsService = async (pharmacy_id: number, pagination) => {
-  let {page, limit, search, product_category_id} = pagination;
+  let {page, limit, search, product_category_id, branch_id} = pagination;
   page = Number(page);
   limit = Number(limit);
   const offset = limit * (page - 1);
   search = normaliseSearchText(search);
 
   const query = knex("products")
+    .where("products.pharmacy_id", pharmacy_id)
     .leftJoin("product_categories", "products.product_category_id", "product_categories.id")
     .leftJoin("product_units", "products.unit", "product_units.id")
-    .where("products.pharmacy_id", pharmacy_id)
     .modify((qb) => {
       if(search) {
         qb.andWhere( builder => 
@@ -114,11 +114,25 @@ export const getProductsService = async (pharmacy_id: number, pagination) => {
       if(product_category_id) {
         qb.andWhere("product_categories.id", product_category_id)
       }
+      if(branch_id) {
+        qb.whereExists(function() {
+          this.select(knex.raw('1'))
+            .from('batches')
+            .whereRaw('batches.product_id = products.id')
+            .andWhere('batches.pharmacy_branch_id', branch_id)
+            .andWhere('batches.is_active', true);
+        });
+      }
     })
     .select(
       "products.*",
       "product_categories.category_name as product_category_name",
       "product_units.unit as unit",
+    )
+    .groupBy(
+      "products.id",
+      "product_categories.category_name",
+      "product_units.unit",
     )
     .orderBy("products.product_name", "asc");
 

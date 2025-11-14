@@ -105,7 +105,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
             'id', batches.id,
             'available_stock', batches.available_stock
           )
-        ) FILTER (WHERE batches.expiry_date >= CURRENT_DATE) as batches
+        ) FILTER (WHERE batches.expiry_date >= CURRENT_DATE OR batches.expiry_date IS NULL) as batches
       `)
     )
     .groupBy(

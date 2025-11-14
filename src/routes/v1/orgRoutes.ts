@@ -17,6 +17,10 @@ router.get("/branches/:pharmacy_id", orgController.getBranches);
 
 router.post("/add-employee", verifyRoleAccess(PermissionMap.ORGANIZATION.ADD_EMPLOYEE), validator(addEmployeeValidator), orgController.addEmployee);
 
-router.get("/details", verifyRoleAccess(PermissionMap.ORGANIZATION.VIEW), orgController.getDetails);
+router.get(
+  "/user-management", 
+  verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT, PermissionMap.ORGANIZATION.VIEW), 
+  orgController.userManagementDetails
+);
 
 export default router;

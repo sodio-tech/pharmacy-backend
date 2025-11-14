@@ -97,27 +97,45 @@ export const addEmployeeService = async (admin, employee: Employee) => {
   return result;
 }
 
-export const getDetailsService = async (admin) => {
+export const userManagementDetailsService = async (admin) => {
   const result = await knex("pharmacies")
     .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
     .leftJoin('pharmacy_branch_employees', 'pharmacy_branches.id', 'pharmacy_branch_employees.pharmacy_branch_id')
     .leftJoin('users', 'users.id', 'pharmacy_branch_employees.employee_id')
     .where('pharmacies.id', admin.pharmacy_id)
     .select(
-      knex.raw(`COUNT(DISTINCT pharmacy_branch_employees.id) as employees`),
-      knex.raw(`COUNT(DISTINCT pharmacy_branches.id) as branches`),
+      knex.raw(`COUNT(DISTINCT pharmacy_branch_employees.id)::integer as total_users`),
+      knex.raw(`COUNT(DISTINCT pharmacy_branches.id)::integer as branch_count`),
+      knex.raw(`
+        COUNT(DISTINCT pharmacy_branch_employees.id) 
+        FILTER (WHERE date_trunc('month', users.created_at) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month'))
+        as previous_month_users
+      `),
+      knex.raw(`
+        COUNT(DISTINCT pharmacy_branch_employees.id)
+        FILTER (WHERE date_trunc('month', users.created_at) = date_trunc('month', CURRENT_DATE))
+        as current_month_users
+      `),
       knex.raw(`
         COUNT(
           CASE WHEN users.role = ? THEN 1 END
-        ) as admin_count
+        )::integer as admin_count
       `, [ROLES.ADMIN]),
       knex.raw(`
         COUNT(
           CASE WHEN users.role = ? THEN 1 END
-        ) as pharmacist_count
+        )::integer as pharmacist_count
       `, [ROLES.PHARMACIST])
     )
     .first();
 
-  return result;
+  const stats = {
+    total_users: result.total_users,
+    branch_count: result.branch_count,
+    admin_count: result.admin_count,
+    pharmacist_count: result.pharmacist_count,
+    active_users: result.total_users,
+    newusers: result.current_month_users - result.previous_month_users,
+  }
+  return stats
 }

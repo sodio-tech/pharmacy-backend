@@ -54,12 +54,12 @@ export const addEmployee = controllerWrapper(async (req, res, next) => {
   }
 });
 
-export const getDetails = controllerWrapper(async (req, res, next) => {
+export const userManagementDetails = controllerWrapper(async (req, res, next) => {
   try {
     const user = req.user;
-    const result = await orgService.getDetailsService(user);
-    return res.success("Organization details fetched", result, 200);
+    const result = await orgService.userManagementDetailsService(user);
+    return res.success("User management fetched", result, 200);
   } catch (error: any) {
-    return res.error("Failed to fetch organization details", error.message, 500);
+    return res.error("Failed to fetch user management", error.message, 500);
   }
 });

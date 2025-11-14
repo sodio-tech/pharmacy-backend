@@ -10,3 +10,8 @@ export const buildNormalizedSearch = (column: string) => {
   return `LOWER(REGEXP_REPLACE(${column}, '[^a-zA-Z0-9_]', '', 'g')) LIKE ?`
 };
 
+export const percentChange = (current: number, prev: number) => {
+  if (prev === 0) return current === 0 ? 0 : 100;
+  return ((current - prev) / prev) * 100;
+};
+

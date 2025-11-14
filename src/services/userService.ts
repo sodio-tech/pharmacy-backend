@@ -36,7 +36,7 @@ export const getProfileService = async (userData: {id: number, role: number}) =>
       )
 
     const [user] = await baseQuery;
-    user.profile_image = s3Service.getFileUrl(user.profile_image);
+    user.profile_image = user.profile_image && s3Service.getFileUrl(user.profile_image);
     if (userData.role !== ROLES.SUPER_ADMIN) {
       delete user.subscription_status;
     }

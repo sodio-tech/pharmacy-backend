@@ -133,7 +133,7 @@ export const getProductsService = async (pharmacy_id: number, pagination) => {
     delete product.updated_at;
     delete product.product_category_id;
     delete product.pharmacy_id;
-    product.image = s3Service.getFileUrl(product.image);
+    product.image = product.image && s3Service.getFileUrl(product.image);
   });
 
   return { 

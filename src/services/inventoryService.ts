@@ -36,7 +36,7 @@ export const inventoryGeneralAnalyticsService = async (pharmacy_id: number, bran
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
     .andWhere('batches.is_active', true)
-    .sum(knex.raw(`batches.available_stock * COALESCE(products.pack_size, 1) * batches.unit_cost`))
+    .sum(knex.raw(`batches.available_stock * COALESCE(products.pack_size, 1) * products.selling_price`))
     .first()
 
   return {

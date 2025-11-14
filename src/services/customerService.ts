@@ -75,6 +75,8 @@ export const getCustomerDetailsService = async (customer_id: string, user) => {
 export const getPrescriptionsService = async (params, user) => {
   let {page, limit, search, start_date, end_date} = params;
   if (start_date == end_date) {
+    start_date = new Date(start_date);
+    end_date = new Date(end_date);
     start_date.setHours(0, 0, 0, 0);
     end_date.setHours(23, 59, 59, 999);
   }

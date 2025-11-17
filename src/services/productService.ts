@@ -274,7 +274,7 @@ export const updateProductService = async (admin, product_id: number, updatePara
         .returning(['id'])
 
       batchIds = batchIds.map(batch => batch.id);
-      if (batchIds.length > 1) {
+      if (batchIds.length > 0) {
         const [updatedStock] = await trx('batches')
           .where({product_id, pharmacy_branch_id: branch_id, id: batchIds[0]})
           .update({ available_stock: stock }).returning("*");

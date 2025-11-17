@@ -52,6 +52,8 @@ export const newProductSchema = z.object({
   min_stock: z.coerce.number().min(1, {error: 'Minimum stock should be greater than 0'}).optional(),
   max_stock: z.coerce.number().min(1, {error: 'Maximum stock should be greater than 0'}).optional(),
 
+  gst_rate: z.coerce.number().min(0, {error: 'GST rate should be greater than 0'}).optional(),
+
 });
 
 export type Product = z.infer<typeof newProductSchema>;

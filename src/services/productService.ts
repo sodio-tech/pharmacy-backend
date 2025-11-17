@@ -223,9 +223,11 @@ export const updateProductService = async (admin, product_id: number, updatePara
   const branch_id = updateParams.branch_id;
   delete updateParams.stock;
   delete updateParams.branch_id;
-  updateParams.product_category_id = typeof updateParams.product_category_id === 'number' 
-    ? updateParams.product_category_id 
-    : updateParams.product_category_id?.[0]!;
+  if (updateParams.product_category_id){
+    updateParams.product_category_id = typeof updateParams.product_category_id === 'number' 
+      ? updateParams.product_category_id 
+      : updateParams.product_category_id?.[0]!;
+  }
 
   const product = await knex('products')
     .where('id', product_id)
@@ -266,13 +268,15 @@ export const updateProductService = async (admin, product_id: number, updatePara
     }
 
     if (stock) {
-      const anyBatch = await trx('batches')
-        .where({product_id, pharmacy_branch_id: branch_id})
-        .first();
+      let batchIds = await trx('batches')
+        .where({product_id, pharmacy_branch_id: branch_id })
+        .update({ available_stock: 0})
+        .returning(['id'])
 
-      if (anyBatch) {
+      batchIds = batchIds.map(batch => batch.id);
+      if (batchIds.length > 1) {
         const [updatedStock] = await trx('batches')
-          .where({product_id, pharmacy_branch_id: branch_id, id: anyBatch.id})
+          .where({product_id, pharmacy_branch_id: branch_id, id: batchIds[0]})
           .update({ available_stock: stock }).returning("*");
 
         updated.stock = updatedStock.available_stock;

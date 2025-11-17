@@ -157,6 +157,8 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
           await SalesService.handlePrescription(trx, sale.id, data, user);
           return sale.id;
         }
+
+        return sale.id;
       }
     }
   })

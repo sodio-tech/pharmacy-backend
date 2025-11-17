@@ -281,7 +281,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       'products.image',
       'products.gst_rate',
       'products.pack_size',
-      knex.raw('COALESCE(products.selling_price, 0) * COALESCE(products.pack_size, 1) as unit_price'),
+      knex.raw('COALESCE(products.selling_price, 0) as unit_price'),
       knex.raw(`
         SUM( 
           CASE WHEN batches.is_active = true

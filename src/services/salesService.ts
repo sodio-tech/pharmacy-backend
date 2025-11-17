@@ -172,7 +172,10 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
 }
 
 export const getSalesService = async (user, branch_id: number, params) => {
-  let { page, limit } = params;
+  let { page, limit, sale_id } = params;
+  if (sale_id && sale_id.length > 0) {
+    sale_id = sale_id.split(",");
+  }
   page = Number(page);
   limit = Number(limit);
   const offset = limit * (page - 1);
@@ -182,6 +185,11 @@ export const getSalesService = async (user, branch_id: number, params) => {
     .leftJoin('prescriptions', 'prescriptions.sale_id', 'sales.id')
     .leftJoin('payment_modes', 'payment_modes.id', 'sales.payment_mode_id')
     .where('sales.pharmacy_branch_id', branch_id)
+    .modify((qb) => {
+      if(sale_id && sale_id.length > 0) {
+        qb.whereIn('sales.id', sale_id)
+      }
+    })
     .select(
       'sales.id',
       'payment_modes.name as payment_mode',

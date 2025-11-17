@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import knex from "../config/database.js";
 import {Sale} from "../middleware/schemas/types.js";
 import * as s3Service from "./s3Service.js";
+import * as productService from "./productService.js";
 
 type CartItems = Record<string, {
   price: number;
@@ -271,6 +272,14 @@ export const getSalesService = async (user, branch_id: number, params) => {
   let i = 0;
   for (const sale of sales) {
     sale.invoice_id = "0" + invoiceIds[i].local_invoice_id;
+    const product_ids = sale.sale_items.map((sale_item: any) => sale_item.product_id).join(",");
+    console.log(product_ids);
+    const products = await productService.getProductDetailsService(user, product_ids, branch_id);
+    let j = 0;
+    for (const sale_item of sale.sale_items) {
+      sale_item.product = products.products[j];
+      j++;
+    }
     i++;
   }
   

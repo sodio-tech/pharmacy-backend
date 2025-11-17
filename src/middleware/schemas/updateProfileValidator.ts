@@ -4,6 +4,7 @@ export const newProfileSchema = z.object({
   new_name: z.string().min(1, { message: 'Name cannot be an empty field' }).optional(),
   phone_number: z.string().min(1, { message: 'Phone number cannot be an empty field' }).optional(),
   pharmacy_name: z.string().min(1, { message: 'Pharmacy name cannot be an empty field' }).optional(),
+  currency_code: z.string().min(3, { message: 'Currency code cannot be an empty field' }).optional(),
 });
 
 // Type inference

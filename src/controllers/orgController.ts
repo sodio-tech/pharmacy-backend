@@ -74,3 +74,12 @@ export const managementTools = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch management tools", error.message, 500);
   }
 });
+
+export const supportedCurrencies = controllerWrapper(async (req, res, next) => {
+  try {
+    const result = await orgService.getSupportedCurrenciesService();
+    return res.success("Supported currencies fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch supported currencies", error.message, 500);
+  }
+});

@@ -29,4 +29,9 @@ router.get(
   orgController.managementTools
 );
 
+router.get(
+  "/currencies",   
+  orgController.supportedCurrencies
+);
+
 export default router;

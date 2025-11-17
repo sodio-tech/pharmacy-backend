@@ -30,6 +30,7 @@ export const getProfileService = async (userData: {id: number, role: number}) =>
         'users.last_login',
         'users.two_factor_recovery_code',
         'pharmacies.id as pharmacy_id',
+        'pharmacies.currency_code as currency_code',
         'pharmacies.pharmacy_name',
         'pharmacies.subscription_status',
         'pharmacy_branch_employees.pharmacy_branch_id',
@@ -56,6 +57,7 @@ export const updataProfileService = async (user, data: NewProfile & {profile_pho
 
   const pharmacyUpdates = {
     ...data.pharmacy_name && user.role === ROLES.SUPER_ADMIN && {pharmacy_name: data.pharmacy_name},
+    ...data.currency_code && user.role === ROLES.SUPER_ADMIN && {currency_code: data.currency_code},
   }
 
   await knex.transaction(async (trx) => {

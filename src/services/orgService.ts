@@ -180,3 +180,11 @@ export const managementToolsService = async (admin, params) => {
 
   return {employees: result };
 }
+
+export const getSupportedCurrenciesService = async () => {
+  const currencies = await knex("currencies")
+    .select("code")
+    .orderBy("code", "asc");
+
+  return { currencies };
+}

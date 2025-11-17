@@ -9,7 +9,7 @@ export const inventoryGeneralAnalyticsService = async (pharmacy_id: number, bran
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
     .select(
-      knex.raw(`SUM(CASE WHEN batches.is_active = true THEN batches.available_stock END)::integer as active_products`),
+      knex.raw(`COUNT(DISTINCT CASE WHEN batches.is_active = true THEN products.id END)::integer as active_products`),
       knex.raw(`SUM(batches.available_stock)::integer as total_products`),
       knex.raw(`
         COUNT(

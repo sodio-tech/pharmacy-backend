@@ -260,7 +260,7 @@ export const getSalesService = async (user, branch_id: number, params) => {
 
   let i = 0;
   for (const sale of sales) {
-    sale.invoice_id = invoiceIds[i].local_invoice_id;
+    sale.invoice_id = "0" + invoiceIds[i].local_invoice_id;
     i++;
   }
   

@@ -25,4 +25,6 @@ router.get("/list/:branch_id", salesController.getSales);
 
 router.get("/general-analytics/:branch_id", salesController.getSalesGeneralAnalytics);
 
+router.get("/generate-reciept/:sale_id", salesController.generateReceipt);
+
 export default router;

@@ -3,6 +3,7 @@ import knex from "../config/database.js";
 import {Sale} from "../middleware/schemas/types.js";
 import * as s3Service from "./s3Service.js";
 import * as productService from "./productService.js";
+import * as pdfService from "./pdfService/pdfService.js";
 
 type CartItems = Record<string, {
   price: number;
@@ -391,4 +392,55 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
     this_month_transactions,
     this_month_transactions_change_percent: percentChange(this_month_transactions, last_month_transactions),
   };
+}
+
+export const generateReceiptPDFService = async (user, sale_id: string, branch_id: number) => {
+  console.log(user, user.pharmacy_branch_id, sale_id)
+  const res = await getSalesService(user, branch_id, {sale_id, page: 1, limit: 1});
+  const pharmacy = await knex('pharmacies').where('id', user.pharmacy_id).first();
+  const sale = res.sales[0];
+
+  const saleItems: pdfService.SaleItem[] = [];
+  let srNo = 1;
+  for (const sale_item of sale.sale_items) {
+    saleItems.push({
+      srNo,
+      name: sale_item.product.product_name,
+      qty: sale_item.quantity,
+      price: sale_item.price,
+      tax: sale_item.gst_rate,
+      amount: sale_item.price,
+    })
+    srNo++;
+  }
+
+  const invoice: pdfService.InvoiceData = {
+    pharmacyName: pharmacy.pharmacy_name ?? "",
+    pharmacyAddress: pharmacy.address ?? "",
+    pharmacyContact: pharmacy.contact ?? "",
+    pharmacyGSTIN: pharmacy.gstin ?? "",
+    pharmacyPAN: pharmacy.pan ?? "",
+    billTo: {
+      name: sale.customer.name,
+      phone: sale.customer.phone_number,
+      email: sale.customer.email,
+    },
+    invoiceNo: sale.invoice_id,
+    invoiceDate: sale.created_at.toLocaleDateString('en-IN'),
+    items: saleItems,
+    discount: 0,
+    totalAmount: sale.total_amount,
+    receivedAmount: sale.total_amount,
+    dueBalance: 0,
+    notes: ["No return deal"],
+    terms: [
+      "Customer will pay the GST",
+      "Customer will pay the Delivery charges",
+      "Pay due amount within 15 days",
+    ],
+    totalQty: sale.sale_items.reduce((acc: number, sale_item: any) => acc + sale_item.quantity, 0),
+  };
+
+  const pdf = await pdfService.generatePDF(invoice);
+  return pdf;
 }

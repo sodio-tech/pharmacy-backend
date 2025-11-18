@@ -54,3 +54,20 @@ export const getSalesGeneralAnalytics = controllerWrapper(async (req, res, next)
     return res.error("Failed to fetch sales general analytics", error.message, 500);
   }
 });
+
+export const generateReceipt = controllerWrapper(async (req, res, next) => {
+  try {
+    const sale_id = req.params.sale_id;
+    let branch_id = req.user.pharmacy_branch_id || req.query.branch_id;
+    branch_id = Number(branch_id);
+    const pdfStream =  await salesService.generateReceiptPDFService(req.user, sale_id, branch_id);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=receipt-${sale_id}.pdf`);
+
+    pdfStream.pipe(res);
+  } catch (error: any) {
+    return res.error("Failed to generate receipt", error.message, 500);
+  }
+});
+

@@ -13,6 +13,10 @@
     "declaration": false, 
     "sourceMap": true,
     "noUncheckedIndexedAccess": true,
+
+    "jsx": "react-jsx",       
+    "jsxImportSource": "react",
+
     "paths": {
       "@/*": ["./src/*"]
     }

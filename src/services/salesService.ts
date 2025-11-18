@@ -9,6 +9,7 @@ type CartItems = Record<string, {
   gst_rate: number;
   quantity: number;
   pack_size?: number | undefined;
+  list_price: number;
 }>
 
 type Products = Record<string, Record<string, any>>;
@@ -24,6 +25,7 @@ const SalesService = {
     let total_before_tax = 0;
     const totalAmount = Object.entries(cart).reduce((acc, cartItem) => { 
       const [product_id, item] = cartItem;
+      cart[product_id]!.list_price = products[product_id]?.selling_price;
       let price = item.quantity 
         * (item.pack_size ?? products[product_id]?.pack_size) 
         * products[product_id]?.selling_price
@@ -84,7 +86,7 @@ const SalesService = {
 
 export const makeSaleService = async (user, data: Sale & {prescription: any}, action: "paid" | "draft" | "review") => {
   let cart = Object.fromEntries(
-    data.cart.map(({product_id, ...rest}) => [product_id, {...rest, price: 0, gst_rate: 0}])
+    data.cart.map(({product_id, ...rest}) => [product_id, {...rest, price: 0, gst_rate: 0, list_price: 0}])
   );
 
   const _products = await knex('batches')
@@ -169,7 +171,11 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
   return {
     sale_id,
     products: Object.entries(cart).map(
-      ([id, item]) => ({...item, id, pack_size: item.pack_size ?? products[id]?.pack_size ?? 1})
+      ([id, item]) => ({
+        ...item, 
+        id, 
+        pack_size: item.pack_size ?? products[id]?.pack_size ?? 1,
+      })
     ),
     total_amt: totalAmount,
     total_before_tax,

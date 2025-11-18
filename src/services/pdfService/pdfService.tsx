@@ -11,8 +11,12 @@ export interface SaleItem {
   name: string;
   qty: string;
   price: string;
+  list_price: number;
   tax: string;
   amount: string;
+  hsn?: string;
+  batchNo?: string;
+  batchExpiry?: string;
 }
 
 export interface InvoiceData {
@@ -27,15 +31,12 @@ export interface InvoiceData {
     email?: string;
   };
   invoiceNo: string;
+  transaction_id: string;
   invoiceDate: string;
   items: SaleItem[];
   discount?: number;
   totalQty: number;
   totalAmount: number;
-  receivedAmount: number;
-  dueBalance: number;
-  notes: string[];
-  terms: string[];
 }
 
 const FIRST_PAGE_ROWS = 15;
@@ -48,8 +49,40 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica",
   },
 
+  pageNumberContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginBottom: 5,
+  },
+
+  pageNumber: {
+    fontSize: 8,
+    fontWeight: "bold",
+  },
+
+  invoiceBanner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    border: "1px solid #000",
+    padding: 8,
+    marginBottom: 0,
+  },
+
+  invoiceText: {
+    fontSize: 12,
+    textAlign: "center",
+    flex: 1,
+  },
+
+  originalCopy: {
+    fontSize: 9,
+    fontWeight: "bold",
+  },
+
   headerContainer: {
     border: "1px solid #000",
+    borderTop: 0,
     padding: 12,
     marginBottom: 0,
   },
@@ -57,29 +90,18 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#00d084",
     textAlign: "center",
-    marginBottom: 6,
   },
 
   headerAddress: {
     fontSize: 9,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   headerDetailsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    fontSize: 8,
-  },
-
-  boldText: {
-    fontWeight: "bold",
-    fontSize: 8,
-  },
-
-  normalText: {
+    textAlign: "center",
+    marginBottom: 2,
     fontSize: 8,
   },
 
@@ -130,25 +152,18 @@ const styles = StyleSheet.create({
 
   tableHeaderRow: {
     flexDirection: "row",
-    backgroundColor: "#00d084",
     borderBottom: "1px solid #000",
   },
 
   tableHeaderCell: {
     padding: 6,
     fontWeight: "bold",
-    fontSize: 8,
+    fontSize: 9,
     borderRight: "1px solid #000",
     textAlign: "center",
   },
 
   tableRow: {
-    flexDirection: "row",
-    borderBottom: "1px solid #ddd",
-    minHeight: 25,
-  },
-
-  tableRowNoBorder: {
     flexDirection: "row",
     minHeight: 25,
   },
@@ -156,135 +171,57 @@ const styles = StyleSheet.create({
   tableCell: {
     padding: 6,
     fontSize: 8,
-    borderRight: "1px solid #ddd",
     justifyContent: "center",
-  },
-
-  colSrNo: { width: "8%" },
-  colItems: { width: "30%" },
-  colQty: { width: "15%" },
-  colPrice: { width: "15%" },
-  colTax: { width: "15%" },
-  colAmount: { width: "17%", borderRight: 0 },
-
-  summaryRow: {
-    flexDirection: "row",
-    borderTop: "1px solid #000",
-    borderBottom: "1px solid #ddd",
-    borderLeft: "1px solid #000",
     borderRight: "1px solid #000",
   },
 
-  summaryLabel: {
-    width: "68%",
-    padding: 6,
-    fontSize: 9,
-    textAlign: "right",
-    fontWeight: "bold",
-    borderRight: "1px solid #ddd",
-  },
-
-  summaryEmpty: {
-    width: "15%",
-    borderRight: "1px solid #ddd",
-  },
-
-  summaryValue: {
-    width: "17%",
-    padding: 6,
-    fontSize: 9,
-    textAlign: "right",
-  },
+  colSrNo: { width: "5%" },
+  colItems: { width: "22%" },
+  colHSN: { width: "14%" },
+  colBatchNo: { width: "14%" },
+  colExpiry: { width: "10%" },
+  colQty: { width: "5%" },
+  colPrice: { width: "10%" },
+  colTax: { width: "5%", textAlign: "center" },
+  colAmount: { width: "15%", borderRight: 0 },
 
   totalRow: {
     flexDirection: "row",
-    backgroundColor: "#00d084",
-    borderLeft: "1px solid #000",
-    borderRight: "1px solid #000",
+    borderTop: "1px solid #000",
     borderBottom: "1px solid #000",
   },
 
   totalLabel: {
-    width: "68%",
+    width: "85%",
     padding: 6,
     fontSize: 10,
     textAlign: "right",
     fontWeight: "bold",
-    borderRight: "1px solid #000",
-  },
-
-  totalQty: {
-    width: "15%",
-    padding: 6,
-    fontSize: 9,
-    textAlign: "center",
-    fontWeight: "bold",
-    borderRight: "1px solid #000",
   },
 
   totalAmount: {
-    width: "17%",
+    width: "15%",
     padding: 6,
     fontSize: 10,
     textAlign: "right",
     fontWeight: "bold",
   },
 
-  paymentRow: {
-    flexDirection: "row",
-    borderLeft: "1px solid #000",
-    borderRight: "1px solid #000",
-    borderBottom: "1px solid #000",
-  },
-
-  paymentLabel: {
-    width: "83%",
-    padding: 6,
-    fontSize: 9,
-    textAlign: "right",
-    borderRight: "1px solid #ddd",
-  },
-
-  paymentValue: {
-    width: "17%",
-    padding: 6,
-    fontSize: 9,
-    textAlign: "right",
-  },
-
-  footerContainer: {
+  signatureContainer: {
     position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    gap: 10,
-  },
-
-  footerBox: {
-    width: "48%",
-    border: "1px solid #000",
-    padding: 10,
-    minHeight: 70,
-  },
-
-  footerTitle: {
-    fontWeight: "bold",
-    fontSize: 9,
-    marginBottom: 6,
-  },
-
-  footerText: {
-    fontSize: 8,
-    marginBottom: 2,
-  },
-
-  signature: {
-    position: "absolute",
-    bottom: 100,
+    bottom: 40,
     right: 40,
-    textAlign: "right",
+    alignItems: "flex-end",
+  },
+
+  signatureFor: {
     fontSize: 9,
+    marginBottom: 40,
+  },
+
+  signatureLine: {
+    fontSize: 9,
+    fontWeight: "bold",
   },
 
   continuationTable: {
@@ -292,22 +229,23 @@ const styles = StyleSheet.create({
   },
 });
 
-const TableRow = ({
-  item,
-  showBorder = true,
-}: {
-  item: SaleItem | null;
-  showBorder?: boolean;
-}) => (
-  <View style={showBorder ? styles.tableRow : styles.tableRowNoBorder}>
+const TableRow = ({ item }: { item: SaleItem | null }) => (
+  <View style={styles.tableRow}>
     <Text style={[styles.tableCell, styles.colSrNo]}>{item?.srNo || " "}</Text>
     <Text style={[styles.tableCell, styles.colItems]}>{item?.name || " "}</Text>
+    <Text style={[styles.tableCell, styles.colHSN]}>{item?.hsn || " "}</Text>
+    <Text style={[styles.tableCell, styles.colBatchNo]}>
+      {item?.batchNo || " "}
+    </Text>
+    <Text style={[styles.tableCell, styles.colExpiry]}>
+      {item?.batchExpiry || " "}
+    </Text>
     <Text style={[styles.tableCell, styles.colQty]}>{item?.qty || " "}</Text>
     <Text style={[styles.tableCell, styles.colPrice]}>
-      {item ? `Rs. ${item.price}` : " "}
+      {item ? `${item.list_price}` : " "}
     </Text>
     <Text style={[styles.tableCell, styles.colTax]}>
-      {item ? `Rs. ${item.tax}` : " "}
+      {item ? `${item.tax}` : " "}
     </Text>
     <Text style={[styles.tableCell, styles.colAmount]}>
       {item ? `Rs. ${item.amount}` : " "}
@@ -319,39 +257,52 @@ const TableHeader = () => (
   <View style={styles.tableHeaderRow}>
     <Text style={[styles.tableHeaderCell, styles.colSrNo]}>Sr. No</Text>
     <Text style={[styles.tableHeaderCell, styles.colItems]}>Items</Text>
-    <Text style={[styles.tableHeaderCell, styles.colQty]}>Quantity</Text>
-    <Text style={[styles.tableHeaderCell, styles.colPrice]}>Price / Unit</Text>
-    <Text style={[styles.tableHeaderCell, styles.colTax]}>Tax / Unit</Text>
-    <Text style={[styles.tableHeaderCell, styles.colAmount]}>Amount</Text>
+    <Text style={[styles.tableHeaderCell, styles.colHSN]}>HSN/SAC</Text>
+    <Text style={[styles.tableHeaderCell, styles.colBatchNo]}>Batch No.</Text>
+    <Text style={[styles.tableHeaderCell, styles.colExpiry]}>Expiry</Text>
+    <Text style={[styles.tableHeaderCell, styles.colQty]}>Qty</Text>
+    <Text style={[styles.tableHeaderCell, styles.colPrice]}>List Price</Text>
+    <Text style={[styles.tableHeaderCell, styles.colTax]}>Tax %</Text>
+    <Text style={[styles.tableHeaderCell, styles.colAmount]}>Amount (Rs.)</Text>
   </View>
 );
 
 const FirstPage = ({
   data,
   items,
+  pageNumber,
+  totalPages,
 }: {
   data: InvoiceData;
   items: SaleItem[];
+  pageNumber: number;
+  totalPages: number;
 }) => {
   const emptyRows = FIRST_PAGE_ROWS - items.length;
 
   return (
     <Page size="A4" style={styles.page}>
+      <View style={styles.invoiceBanner}>
+        <Text style={{ width: "20%" }}>
+          Page No. {pageNumber} of {totalPages}
+        </Text>
+        <Text style={styles.invoiceText}>INVOICE</Text>
+        <Text
+          style={[styles.originalCopy, { width: "20%", textAlign: "right" }]}
+        >
+          Original Copy
+        </Text>
+      </View>
+
       <View style={styles.headerContainer}>
         <Text style={styles.companyName}>{data.pharmacyName}</Text>
         <Text style={styles.headerAddress}>{data.pharmacyAddress}</Text>
         <View style={styles.headerDetailsRow}>
+          <Text>Mobile: {data.pharmacyContact}</Text>
+        </View>
+        <View style={styles.headerDetailsRow}>
           <Text>
-            <Text style={styles.boldText}>Phone: </Text>
-            <Text style={styles.normalText}>{data.pharmacyContact}</Text>
-          </Text>
-          <Text>
-            <Text style={styles.boldText}>GSTIN: </Text>
-            <Text style={styles.normalText}>{data.pharmacyGSTIN}</Text>
-          </Text>
-          <Text>
-            <Text style={styles.boldText}>PAN Number: </Text>
-            <Text style={styles.normalText}>{data.pharmacyPAN}</Text>
+            GSTIN - {data.pharmacyGSTIN} | PAN - {data.pharmacyPAN}
           </Text>
         </View>
       </View>
@@ -360,7 +311,7 @@ const FirstPage = ({
         <View style={styles.billToLeft}>
           <Text style={styles.sectionTitle}>BILL TO</Text>
           <Text style={styles.detailText}>{data.billTo.name}</Text>
-          <Text style={styles.detailText}>Phone: {data.billTo.phone}</Text>
+          <Text style={styles.detailText}>Mobile: {data.billTo.phone}</Text>
           <Text style={styles.detailText}>Email: {data.billTo.email}</Text>
         </View>
 
@@ -373,101 +324,66 @@ const FirstPage = ({
             <Text style={styles.invoiceLabel}>Invoice Date</Text>
             <Text style={styles.detailText}>{data.invoiceDate}</Text>
           </View>
+          <View style={styles.invoiceRow}>
+            <Text style={styles.invoiceLabel}>Transaction ID</Text>
+            <Text style={styles.detailText}>{data.transaction_id}</Text>
+          </View>
         </View>
       </View>
 
       <View style={styles.table}>
         <TableHeader />
 
-        {items.map((item, index) => (
-          <TableRow
-            key={item.srNo}
-            item={item}
-            showBorder={index < items.length - 1 || emptyRows > 0}
-          />
+        {items.map((item) => (
+          <TableRow key={item.srNo} item={item} />
         ))}
 
         {Array.from({ length: emptyRows }).map((_, i) => (
-          <TableRow
-            key={`empty-${i}`}
-            item={null}
-            showBorder={i < emptyRows - 1}
-          />
+          <TableRow key={`empty-${i}`} item={null} />
         ))}
-
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Discount</Text>
-          <Text style={styles.summaryEmpty}></Text>
-          <Text style={styles.summaryValue}>{data.discount}%</Text>
-        </View>
 
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalQty}>{data.totalQty}</Text>
           <Text style={styles.totalAmount}>Rs. {data.totalAmount}</Text>
         </View>
       </View>
 
-      <View style={styles.paymentRow}>
-        <Text style={styles.paymentLabel}>Received Amount</Text>
-        <Text style={styles.paymentValue}>Rs. {data.receivedAmount}</Text>
+      <View style={styles.signatureContainer}>
+        <Text style={styles.signatureFor}>For {data.pharmacyName}</Text>
+        <Text style={styles.signatureLine}>Signature</Text>
       </View>
-
-      <View style={styles.paymentRow}>
-        <Text style={styles.paymentLabel}>Due Balance</Text>
-        <Text style={styles.paymentValue}>Rs. {data.dueBalance}</Text>
-      </View>
-
-      <View style={styles.footerContainer}>
-        <View style={styles.footerBox}>
-          <Text style={styles.footerTitle}>Notes</Text>
-          {data.notes.map((note, i) => (
-            <Text key={i} style={styles.footerText}>
-              {i + 1}. {note}
-            </Text>
-          ))}
-        </View>
-
-        <View style={styles.footerBox}>
-          <Text style={styles.footerTitle}>Terms & Conditions</Text>
-          {data.terms.map((term, i) => (
-            <Text key={i} style={styles.footerText}>
-              {i + 1}. {term}
-            </Text>
-          ))}
-        </View>
-      </View>
-
-      <Text style={styles.signature}>
-        Authorised Signatory For{"\n"}
-        {data.pharmacyName}
-      </Text>
     </Page>
   );
 };
 
-const ContinuationPage = ({ items }: { items: SaleItem[] }) => {
+const ContinuationPage = ({
+  items,
+  pageNumber,
+  totalPages,
+}: {
+  items: SaleItem[];
+  pageNumber: number;
+  totalPages: number;
+}) => {
   const emptyRows = SUBSEQUENT_PAGE_ROWS - items.length;
 
   return (
     <Page size="A4" style={styles.page}>
+      <View style={styles.pageNumberContainer}>
+        <Text style={styles.pageNumber}>
+          Page No. {pageNumber} of {totalPages}
+        </Text>
+      </View>
+
       <View style={styles.continuationTable}>
         <TableHeader />
 
-        {items.map((item, index) => (
-          <TableRow
-            key={item.srNo}
-            item={item}
-            showBorder={index < items.length - 1 || emptyRows > 0}
-          />
+        {items.map((item) => (
+          <TableRow key={item.srNo} item={item} />
         ))}
 
         {Array.from({ length: emptyRows }).map((_, i) => (
-          <TableRow
-            key={`empty-${i}`}
-            item={null}
-            showBorder={i < emptyRows - 1}
-          />
+          <TableRow key={`empty-${i}`} item={null} />
         ))}
       </View>
     </Page>
@@ -485,12 +401,24 @@ export const InvoicePDF = ({ data }: { data: InvoiceData }) => {
     subsequentPages.push(remainingItems.slice(i, i + SUBSEQUENT_PAGE_ROWS));
   }
 
+  const totalPages = 1 + subsequentPages.length;
+
   return (
     <Document>
-      <FirstPage data={data} items={firstPageItems} />
+      <FirstPage
+        data={data}
+        items={firstPageItems}
+        pageNumber={1}
+        totalPages={totalPages}
+      />
 
       {subsequentPages.map((pageItems, index) => (
-        <ContinuationPage key={index} items={pageItems} />
+        <ContinuationPage
+          key={index}
+          items={pageItems}
+          pageNumber={index + 2}
+          totalPages={totalPages}
+        />
       ))}
     </Document>
   );

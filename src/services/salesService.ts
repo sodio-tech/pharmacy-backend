@@ -422,7 +422,6 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
 }
 
 export const generateReceiptPDFService = async (user, sale_id: string, branch_id: number) => {
-  console.log(user, user.pharmacy_branch_id, sale_id)
   const res = await getSalesService(user, branch_id, {sale_id, page: 1, limit: 1});
   const pharmacy = await knex('pharmacies').where('id', user.pharmacy_id).first();
   const sale = res.sales[0];
@@ -437,6 +436,7 @@ export const generateReceiptPDFService = async (user, sale_id: string, branch_id
       price: sale_item.price,
       tax: sale_item.gst_rate,
       amount: sale_item.price,
+      list_price: sale_item.product.selling_price * (sale.pack_size ?? sale_item.product.pack_size ?? 1),
     })
     srNo++;
   }
@@ -452,19 +452,12 @@ export const generateReceiptPDFService = async (user, sale_id: string, branch_id
       phone: sale.customer.phone_number,
       email: sale.customer.email,
     },
-    invoiceNo: sale.invoice_id,
+    invoiceNo: `INV #${sale.invoice_id}`,
+    transaction_id: `TN #${sale.id}`,
     invoiceDate: sale.created_at.toLocaleDateString('en-IN'),
     items: saleItems,
     discount: 0,
     totalAmount: sale.total_amount,
-    receivedAmount: sale.total_amount,
-    dueBalance: 0,
-    notes: ["No return deal"],
-    terms: [
-      "Customer will pay the GST",
-      "Customer will pay the Delivery charges",
-      "Pay due amount within 15 days",
-    ],
     totalQty: sale.sale_items.reduce((acc: number, sale_item: any) => acc + sale_item.quantity, 0),
   };
 

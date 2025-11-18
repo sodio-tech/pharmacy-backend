@@ -7,7 +7,7 @@ import { rateLimit } from "express-rate-limit";
 import compression from "compression";
 import responseMiddleware from "./middleware/response.js";
 import errorMiddleware from "./middleware/errorHandler.js";
-import cookieParser from 'cookie-parser';
+import cookieParser  from 'cookie-parser';
 
 import authRoutes from "./routes/v1/authRoutes.js";
 import userRoutes from "./routes/v1/userRoutes.js";

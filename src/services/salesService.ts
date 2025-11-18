@@ -273,12 +273,12 @@ export const getSalesService = async (user, branch_id: number, params) => {
   for (const sale of sales) {
     sale.invoice_id = "0" + invoiceIds[i].local_invoice_id;
     const product_ids = sale.sale_items.map((sale_item: any) => sale_item.product_id).join(",");
-    console.log(product_ids);
-    const products = await productService.getProductDetailsService(user, product_ids, branch_id);
-    let j = 0;
+    let products = await productService.getProductDetailsService(user, product_ids, branch_id);
+    products = Object.fromEntries(
+      products.products.map((product: any) => [product.id, product])
+    );
     for (const sale_item of sale.sale_items) {
-      sale_item.product = products.products[j];
-      j++;
+      sale_item.product = products[sale_item.product_id];
     }
     i++;
   }

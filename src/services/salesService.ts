@@ -13,7 +13,7 @@ type CartItems = Record<string, {
   list_price: number;
 }>
 
-type  Products = Record<string, Record<string, any>>;
+type Products = Record<string, Record<string, any>>;
 
 
 export const getPaymentModesService = async () => {

@@ -167,7 +167,9 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
 
   return {
     sale_id,
-    products: Object.entries(cart).map(([id, product]) => ({...product, id})),
+    products: Object.entries(cart).map(
+      ([id, item]) => ({...item, id, pack_size: item.pack_size ?? products[id]?.pack_size ?? 1})
+    ),
     total_amt: totalAmount,
     total_before_tax,
     status: action,

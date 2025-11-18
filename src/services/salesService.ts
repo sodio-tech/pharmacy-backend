@@ -357,6 +357,18 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
           THEN total_amount END
         )::float as last_month_earnings
       `),
+      knex.raw(`
+        AVG(
+          CASE WHEN date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+          THEN total_amount END
+        )::float as last_month_avg_earnings
+      `),
+      knex.raw(`
+        AVG(
+          CASE WHEN date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)
+          THEN total_amount END
+        )::float as this_month_avg_earnings
+      `)
     )
 
   const today_earnings = salesStats.today_earnings ?? 0;
@@ -369,6 +381,8 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
   const last_month_earnings = salesStats.last_month_earnings ?? 0;
   const this_month_transactions = salesStats.this_month_transactions ?? 0;
   const last_month_transactions = salesStats.last_month_transactions ?? 0;
+  const this_month_avg_earnings = salesStats.this_month_avg_earnings ?? 0;
+  const last_month_avg_earnings = salesStats.last_month_avg_earnings ?? 0;
 
   const percentChange = (current: number, prev: number) => {
     if (prev === 0) return current === 0 ? 0 : 100;
@@ -390,5 +404,8 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
 
     this_month_transactions,
     this_month_transactions_change_percent: percentChange(this_month_transactions, last_month_transactions),
+
+    this_month_avg_earnings,
+    this_month_avg_earnings_change_percent: percentChange(this_month_avg_earnings, last_month_avg_earnings),
   };
 }

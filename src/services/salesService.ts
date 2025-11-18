@@ -236,6 +236,12 @@ export const getSalesService = async (user, branch_id: number, params) => {
           )
         ) as sale_items
       `),
+      knex.raw(`
+        ROW_NUMBER() OVER (
+          PARTITION BY sales.pharmacy_branch_id 
+          ORDER BY sales.id ASC
+        ) as invoice_id
+      `),
     )
     .orderBy('sales.created_at', 'desc')
     .groupBy(
@@ -259,30 +265,9 @@ export const getSalesService = async (user, branch_id: number, params) => {
     .limit(limit)
     .offset(offset);
 
-  const invoiceIds = await knex('sales')
-    .leftJoin(
-      knex.raw(`
-        (SELECT 
-          ROW_NUMBER() OVER (ORDER BY s2.id ASC) as local_invoice_id,
-          s2.id as sale_id
-          FROM sales s2 
-          WHERE s2.pharmacy_branch_id = ?
-        ) as local_ids
-      `, [branch_id]),
-      'sales.id', 'local_ids.sale_id'
-    )
-    .where('sales.pharmacy_branch_id', branch_id)
-    .select(
-      'sales.id',
-      'local_ids.local_invoice_id'
-    )
-    .orderBy('sales.created_at', 'desc')
-    .limit(limit)
-    .offset(offset);
-
   let i = 0;
   for (const sale of sales) {
-    sale.invoice_id = "0" + invoiceIds[i].local_invoice_id;
+    sale.invoice_id = "0" + sale.invoice_id;
     const product_ids = sale.sale_items.map((sale_item: any) => sale_item.product_id).join(",");
     let products = await productService.getProductDetailsService(user, product_ids, branch_id);
     products = Object.fromEntries(

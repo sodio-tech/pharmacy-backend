@@ -153,6 +153,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
             quantity: product.quantity,
             price: product.price,
             gst_rate: product.gst_rate,
+            pack_size: product.pack_size ?? products[product_id]?.pack_size ?? 1,
           })))
 
         if (data.prescription && data.customer_id) {
@@ -168,7 +169,9 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
 
   return {
     sale_id,
-    products: Object.entries(cart).map(([id, product]) => ({...product, id})),
+    products: Object.entries(cart).map(
+      ([id, item]) => ({...item, id, pack_size: item.pack_size ?? products[id]?.pack_size ?? 1})
+    ),
     total_amt: totalAmount,
     total_before_tax,
     status: action,
@@ -222,7 +225,8 @@ export const getSalesService = async (user, branch_id: number, params) => {
             'product_id', sale_items.product_id,
             'quantity', sale_items.quantity,
             'price', sale_items.price,
-            'gst_rate', sale_items.gst_rate
+            'gst_rate', sale_items.gst_rate,
+            'pack_size', sale_items.pack_size
           )
         ) as sale_items
       `),

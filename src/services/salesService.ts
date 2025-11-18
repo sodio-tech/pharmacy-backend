@@ -192,7 +192,21 @@ export const getSalesService = async (user, branch_id: number, params) => {
   page = Number(page);
   limit = Number(limit);
   const offset = limit * (page - 1);
-  const _sales = knex('sales')
+  const _sales = knex
+    .with('sales_with_invoice_id', (qb) => {
+      qb.select(
+        'sales.*',
+        knex.raw(`
+          ROW_NUMBER() OVER (
+            PARTITION BY sales.pharmacy_branch_id 
+            ORDER BY sales.id ASC
+          ) as invoice_id
+        `)
+      )
+      .from('sales')
+      .where('sales.pharmacy_branch_id', branch_id)
+    })
+    .from('sales_with_invoice_id as sales')
     .leftJoin('sale_items', 'sale_items.sale_id', 'sales.id')
     .leftJoin('customers', 'customers.id', 'sales.customer_id')
     .leftJoin('prescriptions', 'prescriptions.sale_id', 'sales.id')
@@ -205,6 +219,7 @@ export const getSalesService = async (user, branch_id: number, params) => {
     })
     .select(
       'sales.id',
+      'sales.invoice_id',
       'payment_modes.name as payment_mode',
       'sales.status',
       'sales.total_amount',
@@ -236,16 +251,11 @@ export const getSalesService = async (user, branch_id: number, params) => {
           )
         ) as sale_items
       `),
-      knex.raw(`
-        ROW_NUMBER() OVER (
-          PARTITION BY sales.pharmacy_branch_id 
-          ORDER BY sales.id ASC
-        ) as invoice_id
-      `),
     )
     .orderBy('sales.created_at', 'desc')
     .groupBy(
       'sales.id',
+      'sales.invoice_id',
       'payment_modes.name',
       'customers.id',
       'sales.status',

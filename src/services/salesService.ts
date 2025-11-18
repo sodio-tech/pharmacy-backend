@@ -276,7 +276,7 @@ export const getSalesService = async (user, branch_id: number, params) => {
       'sales.id',
       'local_ids.local_invoice_id'
     )
-    .orderBy('sales.created_at', 'asc')
+    .orderBy('sales.created_at', 'desc')
     .limit(limit)
     .offset(offset);
 

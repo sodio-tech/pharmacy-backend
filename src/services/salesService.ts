@@ -152,6 +152,7 @@ export const makeSaleService = async (user, data: Sale & {prescription: any}, ac
             quantity: product.quantity,
             price: product.price,
             gst_rate: product.gst_rate,
+            pack_size: product.pack_size ?? products[product_id]?.pack_size ?? 1,
           })))
 
         if (data.prescription && data.customer_id) {
@@ -223,7 +224,8 @@ export const getSalesService = async (user, branch_id: number, params) => {
             'product_id', sale_items.product_id,
             'quantity', sale_items.quantity,
             'price', sale_items.price,
-            'gst_rate', sale_items.gst_rate
+            'gst_rate', sale_items.gst_rate,
+            'pack_size', sale_items.pack_size
           )
         ) as sale_items
       `),

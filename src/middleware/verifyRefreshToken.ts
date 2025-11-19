@@ -20,9 +20,9 @@ export const verifyRefreshToken = (req, res, next) => {
   } catch (error) {
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
-      // path: '/api/v1/auth/refresh-token'
+      domain: '.sodio.tech'
     });
 
     return res.status(401).json({

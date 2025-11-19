@@ -66,17 +66,17 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
 
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
-      // path: '/api/v1/auth/refresh-token'
+      domain: '.sodio.tech'
     });
 
     res.cookie('refresh_token', userLogin.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
+      secure: true,
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      // path: '/api/v1/auth/refresh-token'
+      domain: '.sodio.tech'
     });
 
     delete userLogin.refresh_token;

@@ -94,3 +94,13 @@ export const updateOrganizationProfile = controllerWrapper(async (req, res, next
     return res.error("Failed to update organization profile", error.message, 500);
   }
 });
+
+export const getOrganizationProfile = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const result = await orgService.getOrgProfileService(user);
+    return res.success("Organization profile fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch organization profile", error.message, 500);
+  }
+});

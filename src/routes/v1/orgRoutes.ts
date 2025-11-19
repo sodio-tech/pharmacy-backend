@@ -41,4 +41,10 @@ router.put(
   orgController.updateOrganizationProfile
 );
 
+router.get(
+  "/profile", 
+  verifyRoleAccess(PermissionMap.ORGANIZATION.VIEW), 
+  orgController.getOrganizationProfile
+);
+
 export default router;

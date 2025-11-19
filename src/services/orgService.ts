@@ -199,3 +199,10 @@ export const updatePharmacyProfile = async (user, data: OrgProfile) => {
 
   return res;
 }
+
+export const getOrgProfileService = async (user) => {
+  const result = await knex("pharmacies")
+    .where("id", user.pharmacy_id)
+
+  return result[0];
+}

@@ -12,4 +12,6 @@ router.use(verifyAccessToken);
 
 router.get("/sales-trend", reportsController.getSalesTrend);
 
+router.get("/top-selling-products", reportsController.getTopSellingProducts);
+
 export default router;

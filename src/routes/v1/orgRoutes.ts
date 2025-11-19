@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as orgController from "../../controllers/orgController.js";
 import {verifyAccessToken} from "../../middleware/verifyAccessToken.js";
-import { validator, newBranchValidator, addEmployeeValidator} from "../../middleware/validatorMiddleware.js";
+import { validator, newBranchValidator, addEmployeeValidator, updateOrgProfile} from "../../middleware/validatorMiddleware.js";
 import { verifyRoleAccess} from "../../middleware/verifyRoleAccess.js";
 import { PermissionMap} from '../../config/constants.js';
 
@@ -32,6 +32,13 @@ router.get(
 router.get(
   "/currencies",   
   orgController.supportedCurrencies
+);
+
+router.put(
+  "/profile", 
+  verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT), 
+  validator(updateOrgProfile), 
+  orgController.updateOrganizationProfile
 );
 
 export default router;

@@ -236,6 +236,10 @@ export const signInUserService = async (loginData: UserLogin) => {
       result.refresh_token = refresh_token
     }
 
+    await knex('users')
+      .where({ id: user.id })
+      .update({ last_login: new Date() });
+
     return result;
   } catch (error) {
     console.error("Error logging in user:", error);

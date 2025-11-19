@@ -84,8 +84,10 @@ export const getPrescriptionsService = async (params, user) => {
   if (search) search = normaliseSearchText(search);
   
   const _prescriptions = knex("prescriptions")
+    .leftJoin('sales', 'prescriptions.sale_id', 'sales.id')
     .leftJoin("customers", "customers.id", "prescriptions.customer_id")
     .where('customers.pharmacy_id', user.pharmacy_id)
+    .andWhere('sales.pharmacy_branch_id', user.pharmacy_branch_id)
     .modify((qb) => {
       if(search) {
         qb.andWhere( builder => 

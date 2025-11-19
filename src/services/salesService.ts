@@ -378,6 +378,28 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
       `)
     )
 
+  const [ additionalStats ] = await knex('sales')
+    .leftJoin('sale_items', 'sale_items.sale_id', 'sales.id')
+    .leftJoin('products', 'products.id', 'sale_items.product_id')
+    .where('pharmacy_branch_id', branch_id)
+    .andWhere('status', 'paid')
+    .select(
+      knex.raw(`
+        SUM(
+          CASE WHEN date_trunc('month', sale_items.created_at) = date_trunc('month', CURRENT_DATE)
+          THEN products.unit_price * sale_items.quantity
+          END
+        )::float as this_month_total_cost
+      `),
+      knex.raw(`
+        SUM(
+          CASE WHEN date_trunc('month', sale_items.created_at) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+          THEN products.unit_price * sale_items.quantity * sale_items.pack_size
+          END
+        )::float as last_month_total_cost
+      `),
+    )
+
   const today_earnings = salesStats.today_earnings ?? 0;
   const yesterday_earnings = salesStats.yesterday_earnings ?? 0;
   const today_avg_earnings = salesStats.today_avg_earnings ?? 0;
@@ -395,6 +417,26 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
     if (prev === 0) return current === 0 ? 0 : 100;
     return ((current - prev) / prev) * 100;
   };
+
+  const calculateProfitMargin = (revenue: number, cost: number) => {
+      if (revenue === 0) return 0;
+      return ((revenue - cost) / revenue) * 100;
+    };
+
+  const this_month_profit_margin = calculateProfitMargin(
+    this_month_earnings, 
+    additionalStats.this_month_total_cost ?? 0
+  );
+
+  const last_month_profit_margin = calculateProfitMargin(
+    last_month_earnings, 
+    additionalStats.last_month_total_cost ?? 0
+  );
+
+  const profit_margin_percent_change = percentChange(
+    this_month_profit_margin, 
+    last_month_profit_margin
+  );
 
   return {
     today_earnings,
@@ -414,6 +456,9 @@ export const getSalesGeneralAnalyticsService = async (branch_id: number) => {
 
     this_month_avg_earnings,
     this_month_avg_earnings_change_percent: percentChange(this_month_avg_earnings, last_month_avg_earnings),
+
+    this_month_profit_margin,
+    profit_margin_percent_change,
   };
 }
 

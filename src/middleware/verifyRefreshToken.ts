@@ -22,7 +22,6 @@ export const verifyRefreshToken = (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: '.sodio.tech'
     });
 
     return res.status(401).json({

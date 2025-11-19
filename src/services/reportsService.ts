@@ -110,8 +110,16 @@ export const getSalesTrendService = async (user, params: any, branch_id: number)
 }
 
 export const topSellingProductsService = async (user, params: any, branch_id: number) => {
-  const {page, limit, search, start_date, end_date } = params;
+  let {page, limit, search, start_date, end_date } = params;
   const offset = (page - 1) * limit;
+  if (search) search = normaliseSearchText(search);
+
+  if (start_date && end_date && start_date == end_date) {
+    start_date = new Date(start_date);
+    end_date = new Date(end_date);
+    start_date.setHours(0, 0, 0, 0);
+    end_date.setHours(23, 59, 59, 999);
+  }
 
   const res = await knex('sales')
     .leftJoin('sale_items', 'sale_items.sale_id', 'sales.id')
@@ -125,6 +133,10 @@ export const topSellingProductsService = async (user, params: any, branch_id: nu
             .orWhereRaw(buildNormalizedSearch('products.generic_name'), [`%${search}%`])
             .orWhereRaw(buildNormalizedSearch('products.manufacturer'), [`%${search}%`])
         )
+      }
+      if (start_date && end_date) { 
+        qb.andWhere('sale_items.created_at', '>=', start_date)
+          .andWhere('sale_items.created_at', '<=', end_date)
       }
     })
     .select(

@@ -83,3 +83,14 @@ export const supportedCurrencies = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch supported currencies", error.message, 500);
   }
 });
+
+export const updateOrganizationProfile = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const data = req.body;
+    const result = await orgService.updatePharmacyProfile(user, data);
+    return res.success("Organization profile updated", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to update organization profile", error.message, 500);
+  }
+});

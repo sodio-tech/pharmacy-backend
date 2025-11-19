@@ -1,6 +1,7 @@
 import knex from "../config/database.js";
 import {} from "../middleware/schemas/types.js";
-// import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
+import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
+import * as s3Service from './s3Service.js'
 
 export const getSalesTrendService = async (user, params: any, branch_id: number) => {
   const { timeframe } = params;
@@ -106,4 +107,61 @@ export const getSalesTrendService = async (user, params: any, branch_id: number)
     trend,
     timeframe,
   }
+}
+
+export const topSellingProductsService = async (user, params: any, branch_id: number) => {
+  let {page, limit, search, start_date, end_date } = params;
+  const offset = (page - 1) * limit;
+  if (search) search = normaliseSearchText(search);
+
+  if (start_date && end_date && start_date == end_date) {
+    start_date = new Date(start_date);
+    end_date = new Date(end_date);
+    start_date.setHours(0, 0, 0, 0);
+    end_date.setHours(23, 59, 59, 999);
+  }
+
+  const res = await knex('sales')
+    .leftJoin('sale_items', 'sale_items.sale_id', 'sales.id')
+    .leftJoin('products', 'products.id', 'sale_items.product_id')
+    .where('sales.pharmacy_branch_id', branch_id)
+    .andWhere('sales.status', 'paid')
+    .modify((qb) => {
+      if(search) {
+        qb.andWhere( builder => 
+          builder.orWhereRaw(buildNormalizedSearch('products.product_name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('products.generic_name'), [`%${search}%`])
+            .orWhereRaw(buildNormalizedSearch('products.manufacturer'), [`%${search}%`])
+        )
+      }
+      if (start_date && end_date) { 
+        qb.andWhere('sale_items.created_at', '>=', start_date)
+          .andWhere('sale_items.created_at', '<=', end_date)
+      }
+    })
+    .select(
+      'sale_items.product_id',
+      'products.product_name',
+      knex.raw('MAX(products.generic_name) as generic_name'),
+      knex.raw(`MAX(products.barcode) as barcode`),
+      knex.raw(`MAX(products.qrcode) as qrcode`),
+      knex.raw(`MAX(products.image) as image`),
+      knex.raw(`MAX(products.manufacturer) as manufacturer`),
+      knex.raw(`MAX(products.description) as description`),
+      knex.raw(`SUM(sale_items.quantity) as units_sold`)
+    )
+    .groupBy(
+      'sale_items.product_id', 
+      'products.product_name'
+    )
+    .orderBy('units_sold', 'desc')
+    .limit(limit)
+    .offset(offset);
+    
+
+  for (const product of res) {
+    product.image = s3Service.getFileUrl(product.image);
+  }
+
+  return {products: res};
 }

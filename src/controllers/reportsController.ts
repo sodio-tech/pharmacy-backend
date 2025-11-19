@@ -19,3 +19,17 @@ export const getSalesTrend = controllerWrapper(async (req, res, next) => {
   }
 });
 
+export const getTopSellingProducts = controllerWrapper(async (req, res, next) => {
+  try {
+    const params = req.query;
+    const user = req.user;
+    params.page = Number(params.page || 1);
+    params.limit = Number(params.limit || 10);
+    const branch_id = req.user.pharmacy_branch_id || req.query.branch_id;
+    const result = await reportsService.topSellingProductsService(user, params, branch_id);
+
+    return res.success("Categories fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch categories", error.message, 500);
+  }
+});

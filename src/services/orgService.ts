@@ -2,7 +2,7 @@ import knex from "../config/database.js";
 import dotenv from 'dotenv'
 dotenv.config();
 import { ROLES } from "../config/constants.js";
-import { NewBranch, Employee } from "../middleware/schemas/types.js";
+import { NewBranch, Employee, OrgProfile } from "../middleware/schemas/types.js";
 import bcrypt from "bcryptjs"
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 import * as s3Service from "./s3Service.js";
@@ -171,6 +171,8 @@ export const managementToolsService = async (admin, params) => {
     'users.phone_number',
     'users.role',
     'users.profile_image',
+    'users.last_login',
+    knex.raw(`date_trunc('month', users.last_login) >= date_trunc('month', CURRENT_DATE - INTERVAL '5 month') as active`)
   )
 
   for (const employee of result) {
@@ -187,4 +189,13 @@ export const getSupportedCurrenciesService = async () => {
     .orderBy("code", "asc");
 
   return { currencies };
+}
+
+export const updatePharmacyProfile = async (user, data: OrgProfile) => {
+  const [res] =  await knex("pharmacies")
+    .where("id", user.pharmacy_id)
+    .update(data)
+    .returning("*");
+
+  return res;
 }

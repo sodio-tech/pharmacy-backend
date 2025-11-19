@@ -34,4 +34,9 @@ router.put("/update-product/:product_id",
   productController.updateProduct
 )
 
+router.patch("/make-inactive/:product_id",
+  verifyRoleAccess(PermissionMap.INVENTORY.REMOVE), 
+  productController.makeProductInactive
+)
+
 export default router;

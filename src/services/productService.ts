@@ -101,6 +101,7 @@ export const getProductsService = async (pharmacy_id: number, pagination) => {
 
   const query = knex("products")
     .where("products.pharmacy_id", pharmacy_id)
+    .andWhere('products.is_active', true)
     .leftJoin("product_categories", "products.product_category_id", "product_categories.id")
     .leftJoin("product_units", "products.unit", "product_units.id")
     .modify((qb) => {
@@ -167,6 +168,7 @@ export const getProductDetailsService = async (user, product_id: string, branch_
     .leftJoin("product_images", "product_images.product_id", "products.id")
     .whereIn("products.id", product_ids)
     .andWhere("products.pharmacy_id", user.pharmacy_id)
+    .andWhere('products.is_active', true)
     .select(
       "products.*",
       "product_units.unit as unit",
@@ -291,4 +293,28 @@ export const updateProductService = async (admin, product_id: number, updatePara
     ...updated,
     image
   };
+}
+
+export const makeProductInactiveService = async (admin, product_id: number) => {
+  const product = await knex('products')
+    .where('id', product_id)
+    .andWhere('pharmacy_id', admin.pharmacy_id)
+    .first();
+
+  if (!product) {
+    return {error: "Product not found"};
+  }
+
+  const updated = await knex('products')
+    .where('id', product_id)
+    .andWhere('pharmacy_id', admin.pharmacy_id)
+    .update({
+      is_active: false
+    });
+
+  if (updated === 0) {
+    return {error: "Failed to update product"};
+  }
+  
+  return {success: true};
 }

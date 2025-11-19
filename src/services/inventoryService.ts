@@ -9,7 +9,7 @@ export const inventoryGeneralAnalyticsService = async (pharmacy_id: number, bran
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
     .select(
-      knex.raw(`COUNT(DISTINCT CASE WHEN batches.is_active = true THEN products.id END)::integer as active_products`),
+      knex.raw(`COUNT(DISTINCT CASE WHEN batches.is_active = true AND products.is_active = true THEN products.id END)::integer as active_products`),
       knex.raw(`SUM(batches.available_stock)::integer as total_products`),
       knex.raw(`
         COUNT(
@@ -36,6 +36,7 @@ export const inventoryGeneralAnalyticsService = async (pharmacy_id: number, bran
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
     .andWhere('batches.is_active', true)
+    .andWhere('products.is_active', true)
     .sum(knex.raw(`batches.available_stock * COALESCE(products.pack_size, 1) * products.selling_price`))
     .first()
 
@@ -284,7 +285,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
       knex.raw('COALESCE(products.selling_price, 0) as unit_price'),
       knex.raw(`
         SUM( 
-          CASE WHEN batches.is_active = true
+          CASE WHEN batches.is_active = true AND products.is_active = true
           THEN batches.available_stock END
         )::integer as available_stock
       `),
@@ -302,7 +303,7 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
     )
     .havingRaw(`
       SUM(
-        CASE WHEN batches.is_active = true
+        CASE WHEN batches.is_active = true AND products.is_active = true
         THEN batches.available_stock ELSE 0 END
       ) > 0
     `)

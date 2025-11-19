@@ -87,3 +87,20 @@ export const updateProduct = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to add product", error.message, 500);
   }
 });
+
+export const makeProductInactive = controllerWrapper(async (req, res, next) => {
+  try {
+    const admin = req.user;
+    const product_id = req.params.product_id;
+    if (!product_id) {
+      return res.error("Product id is required", null, 400);
+    }
+    const result = await productService.makeProductInactiveService(admin, product_id);
+    if (result.error) {
+      return res.error(result.error, [], 500);
+    }
+    return res.success("product deleted", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to delete product", error.message, 500);
+  }
+}); 

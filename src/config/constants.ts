@@ -16,6 +16,7 @@ export const PermissionMap = {
   INVENTORY: {
     VIEW: "inventory:view",
     EDIT: "inventory:edit",
+    REMOVE: "inventory:remove",
   },
   BILLING: {
     VIEW: "billing:view",

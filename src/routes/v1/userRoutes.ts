@@ -21,5 +21,7 @@ router.put(
   userController.updateProfile,
 );
 
+router.patch("/switch-branch", userController.switchBranch);
+
 export default router;
 

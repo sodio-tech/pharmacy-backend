@@ -1,6 +1,7 @@
 import knex from "../config/database.js";
 import dotenv from 'dotenv'
 dotenv.config();
+import jwt from "jsonwebtoken"
 import { ROLES } from "../config/constants.js";
 import {NewProfile} from '../middleware/schemas/types.js'
 import * as s3Service from './s3Service.js'
@@ -89,5 +90,25 @@ export const updataProfileService = async (user, data: NewProfile & {profile_pho
   return true;
 }
 
+export const switchBranchService = async (user, branch_id: number) => {
+  console.log(user)
+  const [ result ] = await knex("users")
+    .where("id", user.id)
+    .update({current_branch: branch_id})
+    .returning("*");
 
+  const profile = await getProfileService({id: user.id, role: user.role});
+
+  const access_token = jwt.sign(
+    { 
+      id: user.id, email: user.email, verified: user.email_verified, 
+      two_fa_enabled: result.two_fa_enabled, role: user.role, 
+      pharmacy_id: profile.pharmacy_id, pharmacy_branch_id: Number(branch_id),
+    },
+    process.env.JWT_ACCESS_SECRET_KEY!,
+    { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any
+  );
+
+  return {access_token, branch_id: result.current_branch};
+}
 

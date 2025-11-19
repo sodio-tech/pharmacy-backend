@@ -30,6 +30,7 @@ export const getProfileService = async (userData: {id: number, role: number}) =>
         'users.profile_image',
         'users.last_login',
         'users.two_factor_recovery_code',
+        'users.current_branch as current_working_branch',
         'pharmacies.id as pharmacy_id',
         'pharmacies.currency_code as currency_code',
         'pharmacies.pharmacy_name',

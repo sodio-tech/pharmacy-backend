@@ -207,7 +207,7 @@ export const getProductDetailsService = async (user, product_id: string, branch_
     delete product.pharmacy_id;
     product.image = product.image && s3Service.getFileUrl(product.image);
     product.additional_images = product.additional_images.map(s3Service.getFileUrl);
-    product.stock = product_stock[i].available_stock
+    product.stock = product_stock[i]?.available_stock || 0;
   });
 
   return { products };

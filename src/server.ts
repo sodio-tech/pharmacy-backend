@@ -11,7 +11,7 @@ import cookieParser  from 'cookie-parser';
 
 import authRoutes from "./routes/v1/authRoutes.js";
 import userRoutes from "./routes/v1/userRoutes.js";
-import pharmacyBranchRoutes from "./routes/v1/orgRoutes.js";
+import orgRoutes from "./routes/v1/orgRoutes/orgRoutes.js";
 import supplierRoutes from "./routes/v1/supplierRoutes.js"; 
 import productRoutes from "./routes/v1/productRoutes.js"
 import orderRoutes from "./routes/v1/orderRoutes.js"
@@ -61,7 +61,7 @@ app.use(responseMiddleware);
 // routes with versioning
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/", userRoutes);
-app.use("/api/v1/org", pharmacyBranchRoutes);
+app.use("/api/v1/org", orgRoutes);
 app.use("/api/v1/supplier", supplierRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/orders", orderRoutes);

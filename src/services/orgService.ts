@@ -2,7 +2,7 @@ import knex from "../config/database.js";
 import dotenv from 'dotenv'
 dotenv.config();
 import { ROLES } from "../config/constants.js";
-import { NewBranch, Employee, OrgProfile } from "../middleware/schemas/types.js";
+import { NewBranch, Employee, OrgProfile, BranchUpdates} from "../middleware/schemas/types.js";
 import bcrypt from "bcryptjs"
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
 import * as s3Service from "./s3Service.js";
@@ -205,4 +205,24 @@ export const getOrgProfileService = async (user) => {
     .where("id", user.pharmacy_id)
 
   return result[0];
+}
+
+export const updateBranchService = async (admin, data: BranchUpdates) => {
+  const [res] =  await knex("pharmacy_branches")
+    .where("id", admin.pharmacy_branch_id)
+    .andWhere("pharmacy_id", admin.pharmacy_id)
+    .update(data)
+    .returning("*");
+
+  if (!res) {
+    throw new Error("Failed to update Branch")
+  }
+
+  delete res.created_at;
+  delete res.updated_at;
+  return res;
+}
+
+export const getComplianceReportService = async (user) => {
+
 }

@@ -104,3 +104,24 @@ export const getOrganizationProfile = controllerWrapper(async (req, res, next) =
     return res.error("Failed to fetch organization profile", error.message, 500);
   }
 });
+
+export const updateBranch = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const data = req.body;
+    const result = await orgService.updateBranchService(user, data);
+    return res.success("Branch updated", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to update Branch", error.message, 500);
+  }
+});
+
+export const getComplianceReport = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const result = await orgService.getComplianceReportService(user);
+    return res.success("Compliance report fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch compliance report", error.message, 500);
+  }
+});

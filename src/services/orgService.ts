@@ -223,9 +223,9 @@ export const updateBranchService = async (admin, data: BranchUpdates, branch_id:
   return res;
 }
 
-export const getBranchDetailsService = async (user) => {
+export const getBranchDetailsService = async (user, branch_id: number) => {
   const [res] = await knex("pharmacy_branches")
-    .where("id", user.pharmacy_branch_id)
+    .where("id", branch_id)
     .andWhere("pharmacy_id", user.pharmacy_id)
 
   if (!res) {

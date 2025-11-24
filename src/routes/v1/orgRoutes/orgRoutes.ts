@@ -18,7 +18,7 @@ router.delete("/branch/:branch_id", verifyRoleAccess(PermissionMap.ORGANIZATION.
 
 router.put("/branch/details/:branch_id", verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT), validator(updateBranchValidator), orgController.updateBranch);
 
-router.get("/branch/details", verifyRoleAccess(PermissionMap.ORGANIZATION.VIEW), orgController.getBranchDetails);
+router.get("/branch/details/:branch_id", verifyRoleAccess(PermissionMap.ORGANIZATION.VIEW), orgController.getBranchDetails);
 
 router.get("/branches/:pharmacy_id", orgController.getBranches);
 

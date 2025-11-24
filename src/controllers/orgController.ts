@@ -130,7 +130,8 @@ export const getComplianceReport = controllerWrapper(async (req, res, next) => {
 export const getBranchDetails = controllerWrapper(async (req, res, next) => {
   try {
     const user = req.user;
-    const result = await orgService.getBranchDetailsService(user);
+    const branch_id = req.params?.branch_id;
+    const result = await orgService.getBranchDetailsService(user, branch_id);
     return res.success("Branch details fetched", result, 200);
   } catch (error: any) {
     return res.error("Failed to fetch branch details", error.message, 500);

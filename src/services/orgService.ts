@@ -207,9 +207,9 @@ export const getOrgProfileService = async (user) => {
   return result[0];
 }
 
-export const updateBranchService = async (admin, data: BranchUpdates) => {
+export const updateBranchService = async (admin, data: BranchUpdates, branch_id: number) => {
   const [res] =  await knex("pharmacy_branches")
-    .where("id", admin.pharmacy_branch_id)
+    .where("id", branch_id)
     .andWhere("pharmacy_id", admin.pharmacy_id)
     .update(data)
     .returning("*");

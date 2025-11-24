@@ -16,7 +16,7 @@ router.post("/new-branch", verifyRoleAccess(PermissionMap.ORGANIZATION.ADD_BRANC
 
 router.delete("/branch/:branch_id", verifyRoleAccess(PermissionMap.ORGANIZATION.DELETE_BRANCH), orgController.deleteBranch);
 
-router.put("/branch/details", verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT), validator(updateBranchValidator), orgController.updateBranch);
+router.put("/branch/details/:branch_id", verifyRoleAccess(PermissionMap.ORGANIZATION.EDIT), validator(updateBranchValidator), orgController.updateBranch);
 
 router.get("/branch/details", verifyRoleAccess(PermissionMap.ORGANIZATION.VIEW), orgController.getBranchDetails);
 

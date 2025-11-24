@@ -109,7 +109,8 @@ export const updateBranch = controllerWrapper(async (req, res, next) => {
   try {
     const user = req.user;
     const data = req.body;
-    const result = await orgService.updateBranchService(user, data);
+    const branch_id = req.params?.branch_id;
+    const result = await orgService.updateBranchService(user, data, branch_id);
     return res.success("Branch updated", result, 200);
   } catch (error: any) {
     return res.error("Failed to update Branch", error.message, 500);

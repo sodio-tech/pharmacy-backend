@@ -223,6 +223,20 @@ export const updateBranchService = async (admin, data: BranchUpdates) => {
   return res;
 }
 
+export const getBranchDetailsService = async (user) => {
+  const [res] = await knex("pharmacy_branches")
+    .where("id", user.pharmacy_branch_id)
+    .andWhere("pharmacy_id", user.pharmacy_id)
+
+  if (!res) {
+    throw new Error("Failed to fetch Branch details")
+  }
+
+  delete res.created_at;
+  delete res.updated_at;
+  return res;
+}
+
 export const getComplianceReportService = async (user) => {
 
 }

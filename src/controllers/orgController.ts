@@ -125,3 +125,13 @@ export const getComplianceReport = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to fetch compliance report", error.message, 500);
   }
 });
+
+export const getBranchDetails = controllerWrapper(async (req, res, next) => {
+  try {
+    const user = req.user;
+    const result = await orgService.getBranchDetailsService(user);
+    return res.success("Branch details fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch branch details", error.message, 500);
+  }
+});

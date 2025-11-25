@@ -5,6 +5,7 @@ export const contactRequestSchema = z.object({
   phone_number: z.string().min(3, 'Phone number should have a minimum length of 3'),
   email: z.email().optional(),
   message: z.string().min(3, 'Message should have a minimum length of 3').optional(),
+  subject: z.string().min(3, 'Subject should have a minimum length of 3').optional(),
 })
   .refine(
     data => {

@@ -23,3 +23,25 @@ export const contactRequestList = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to get contact request list", error.message, 500);
   }
 });
+
+export const bookDemo = controllerWrapper(async (req, res, next) => {
+  try {
+    const data = req.body;
+    const result = await adminService.bookDemoService(data);
+    return res.success("Demo booked", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to book demo", error.message, 500);
+  }
+});
+
+export const demoRequests = controllerWrapper(async (req, res, next) => {
+  try {
+    const params = req.query;
+    params.page = Number(params.page || 1);
+    params.limit = Number(params.limit || 10);
+    const result = await adminService.demoRequestListService(params);
+    return res.success("Demo request list", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to get demo request list", error.message, 500);
+  }
+});

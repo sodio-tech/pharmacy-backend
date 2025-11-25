@@ -186,40 +186,42 @@ export const signInUserService = async (loginData: UserLogin) => {
       return { email_verified: false};
     }
 
-    let pharmacy_id: number;
+    let pharmacy_id: number | null = null;
     let pharmacy_branch_id: number | null = user.current_branch;
-    if (!pharmacy_branch_id) {
-      if (user.role === ROLES.SUPER_ADMIN) {
-        const pharmacy = await knex("pharmacies")
-          .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-          .where('pharmacies.super_admin', user.id)
-          .select("pharmacies.id as pharmacy_id", "pharmacy_branches.id as pharmacy_branch_id")
-          .first();
-        pharmacy_id = pharmacy?.pharmacy_id;
-        pharmacy_branch_id = pharmacy?.pharmacy_branch_id;
+    if (user.role !== ROLES.PHARMY_ADMIN) { 
+      if (!pharmacy_branch_id) {
+        if (user.role === ROLES.SUPER_ADMIN) {
+          const pharmacy = await knex("pharmacies")
+            .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
+            .where('pharmacies.super_admin', user.id)
+            .select("pharmacies.id as pharmacy_id", "pharmacy_branches.id as pharmacy_branch_id")
+            .first();
+          pharmacy_id = pharmacy?.pharmacy_id;
+          pharmacy_branch_id = pharmacy?.pharmacy_branch_id;
+        }
+        else {
+          const pharmacy = await knex("pharmacies")
+            .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
+            .leftJoin('pharmacy_branch_employees', 'pharmacy_branch_employees.pharmacy_branch_id', 'pharmacy_branches.id')
+            .where('pharmacy_branch_employees.employee_id', user.id)
+            .select("pharmacies.id as pharmacy_id", "pharmacy_branches.id as pharmacy_branch_id")
+            .first();
+          pharmacy_id = pharmacy?.pharmacy_id;
+          pharmacy_branch_id = pharmacy?.pharmacy_branch_id;
+        }
+
+        await knex('users')
+        .where('id', user.id)
+        .update({current_branch: pharmacy_branch_id})
       }
       else {
         const pharmacy = await knex("pharmacies")
           .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-          .leftJoin('pharmacy_branch_employees', 'pharmacy_branch_employees.pharmacy_branch_id', 'pharmacy_branches.id')
-          .where('pharmacy_branch_employees.employee_id', user.id)
-          .select("pharmacies.id as pharmacy_id", "pharmacy_branches.id as pharmacy_branch_id")
+          .where('pharmacy_branches.id', pharmacy_branch_id)
+          .select("pharmacies.id as pharmacy_id")
           .first();
         pharmacy_id = pharmacy?.pharmacy_id;
-        pharmacy_branch_id = pharmacy?.pharmacy_branch_id;
-      }
-
-      await knex('users')
-        .where('id', user.id)
-        .update({current_branch: pharmacy_branch_id})
-    }
-    else {
-      const pharmacy = await knex("pharmacies")
-        .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-        .where('pharmacy_branches.id', pharmacy_branch_id)
-        .select("pharmacies.id as pharmacy_id")
-        .first();
-      pharmacy_id = pharmacy?.pharmacy_id;
+      } 
     }
 
     result.id = user.id;

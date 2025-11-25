@@ -19,6 +19,7 @@ import inventoryRoutes from "./routes/v1/inventoryRoutes.js"
 import salesRoutes from "./routes/v1/salesRoutes.js"
 import customerRoutes from "./routes/v1/customerRoutes.js"
 import reportsRoutes from "./routes/v1/reportsRoutes.js"
+import adminRoutes from "./routes/v1/adminRoutes.js"
 
 dotenv.config();
 
@@ -60,7 +61,6 @@ app.use(responseMiddleware);
 
 // routes with versioning
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/", userRoutes);
 app.use("/api/v1/org", orgRoutes);
 app.use("/api/v1/supplier", supplierRoutes);
 app.use("/api/v1/products", productRoutes);
@@ -69,6 +69,8 @@ app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api/v1/sales", salesRoutes);
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/reports", reportsRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/", userRoutes);
 
 app.use(errorMiddleware);
 

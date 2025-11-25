@@ -9,19 +9,19 @@ import multer from "multer";
 
 const upload = multer();
 const router = Router();
-router.use(verifyAccessToken);
 // root = /
 
-router.get("/profile", userController.getProfile);
+router.get("/profile", verifyAccessToken, userController.getProfile);
 
 router.put(
   "/update-profile",
+  verifyAccessToken,
   upload.fields([{ name: "profile_photo", maxCount: 1 }]),
   validator(newProfileSchema),
   userController.updateProfile,
 );
 
-router.patch("/switch-branch", userController.switchBranch);
+router.patch("/switch-branch", verifyAccessToken, userController.switchBranch);
 
 export default router;
 

@@ -3,6 +3,7 @@ export enum ROLES {
   SUPER_ADMIN = 1,
   ADMIN = 2,
   PHARMACIST = 3,
+  PHARMY_ADMIN = 4,
 }
 
 // Mailgun template ids 

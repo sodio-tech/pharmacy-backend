@@ -137,3 +137,19 @@ export const resetPassword = controllerWrapper(async (req, res, next) => {
     return res.error("reset_password_failed", error.message, 500);
   }
 });
+
+export const signOutUser = controllerWrapper(async (req, res, next) => {
+  try {
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.sodio.tech',
+      path: '/',
+    });
+
+    return res.success("user_logout", null, 200);
+  } catch (error: any) {
+    return res.error("user_logout_failed", error.message, 500);
+  }
+});

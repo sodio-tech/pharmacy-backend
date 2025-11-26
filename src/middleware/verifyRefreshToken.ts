@@ -4,43 +4,36 @@ dotenv.config();
 
 export const verifyRefreshToken = (req, res, next) => {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({
-        success: false,
-        message: "Access denied. No token provided.",
-      });
-    }
-
-    // Split 'Bearer <token>'
-    const refreshToken = authHeader.split(" ")[1];
+    const refreshToken = req.cookies?.refresh_token;
+    
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
-        message: "Access denied. Invalid token format.",
+        message: "Access denied. No refresh token provided.",
       });
     }
-
-    // Verify the token
-    const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY!);
-    if (decoded.verified !== undefined && !decoded.verified) {
-      return res.status(401).json({
-        success: false,
-        message: "Access denied. Account is not verified.",
-      });
-    }
-
-    // Add decoded user data to request
+    
+    const decoded: any = jwt.verify(
+      refreshToken, 
+      process.env.JWT_REFRESH_SECRET_KEY!
+    );
+    
     req.user = decoded;
     next();
   } catch (error) {
-    console.log(error);
+    console.error("Refresh token verification error:", error);
+    
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.sodio.tech',
+      path: '/',
+    });
+    
     return res.status(401).json({
       success: false,
       message: "refresh_token_expired_or_invalid",
     });
   }
 };
-
-

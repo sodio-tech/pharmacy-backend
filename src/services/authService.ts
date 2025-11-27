@@ -245,8 +245,15 @@ export const signInUserService = async (loginData: UserLogin) => {
         process.env.JWT_ACCESS_SECRET_KEY!,
         { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any
       );
-        
+
+      const refresh_token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_REFRESH_SECRET_KEY!,
+        { expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES } as any
+      );
+
       result.access_token = access_token;
+      result.refresh_token = refresh_token
     }
 
     await knex('users')

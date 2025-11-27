@@ -81,6 +81,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       path: '/',
     });
 
+    delete userLogin.refresh_token;
     return res.success("user_login", userLogin, 200);
   }
   catch (error: any) {   

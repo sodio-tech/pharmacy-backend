@@ -10,6 +10,8 @@ const upload = multer();
 
 const router = Router();
 // root = /products
+
+
 router.use(verifyAccessToken);
 
 router.get("/categories", productController.getCategories);
@@ -38,5 +40,7 @@ router.patch("/make-inactive/:product_id",
   verifyRoleAccess(PermissionMap.INVENTORY.REMOVE), 
   productController.makeProductInactive
 )
+
+router.get("/global", productController.getGlobalProducts);
 
 export default router;

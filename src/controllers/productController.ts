@@ -104,3 +104,15 @@ export const makeProductInactive = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to delete product", error.message, 500);
   }
 }); 
+
+export const getGlobalProducts = controllerWrapper(async (req, res, next) => {
+  try {
+    const params = req.query;
+    params.page = Number(params.page ?? 1);
+    params.limit = Number(params.limit ?? 10);
+    const result = await productService.getGlobalProductsService(params);
+    return res.success("Global products fetched", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to fetch global products", error.message, 500);
+  }
+});

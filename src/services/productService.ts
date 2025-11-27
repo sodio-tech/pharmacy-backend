@@ -318,3 +318,31 @@ export const makeProductInactiveService = async (admin, product_id: number) => {
   
   return {success: true};
 }
+
+export const getGlobalProductsService = async (params) => {
+  let {search, page, limit} = params;
+  const offset = (page - 1) * limit
+
+  const products = knex('global_products')
+    .select('name')
+    .where('is_active', true)
+    .modify((qb) => {
+      if(search) {
+        qb.andWhereLike('name', `${search}%`)
+      }
+    })
+    .orderBy('name', 'asc')
+    .limit(limit)
+    .offset(offset);
+
+  const {total = 0}: any = await products.clone().clearSelect().clearOrder().count('global_products.id as total').first();
+  const results = await products;
+
+  return {
+    products: results,
+    total: Number(total),
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit)
+  };
+}

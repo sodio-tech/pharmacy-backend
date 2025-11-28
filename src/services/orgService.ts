@@ -145,11 +145,10 @@ export const userManagementDetailsService = async (admin) => {
 export const managementToolsService = async (admin, params) => {
   let {role, search} = params;
   search = normaliseSearchText(search);
-  const result = await knex("pharmacies")
-  .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-  .join('pharmacy_branch_employees', 'pharmacy_branches.pharmacy_id', 'pharmacy_branch_employees.pharmacy_id')
-  .join('users', 'users.id', 'pharmacy_branch_employees.employee_id')
-  .where('pharmacies.id', admin.pharmacy_id)
+  const result = await knex("pharmacy_branch_employees")
+  .leftJoin("users", "users.id", "pharmacy_branch_employees.employee_id")
+  .leftJoin("pharmacy_branches", "pharmacy_branches.id", "pharmacy_branch_employees.pharmacy_branch_id")
+  .where("pharmacy_branch_employees.pharmacy_id", admin.pharmacy_id)
   .modify((qb) => {
     if(search) {
       qb.andWhere( builder => 

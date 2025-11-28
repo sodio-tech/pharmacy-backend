@@ -102,7 +102,7 @@ export const addEmployeeService = async (admin, employee: Employee) => {
 export const userManagementDetailsService = async (admin) => {
   const result = await knex("pharmacies")
     .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-    .leftJoin('pharmacy_branch_employees', 'pharmacy_branches.id', 'pharmacy_branch_employees.pharmacy_branch_id')
+    .leftJoin('pharmacy_branch_employees', 'pharmacy_branches.pharmacy_id', 'pharmacy_branch_employees.pharmacy_id')
     .leftJoin('users', 'users.id', 'pharmacy_branch_employees.employee_id')
     .where('pharmacies.id', admin.pharmacy_id)
     .select(

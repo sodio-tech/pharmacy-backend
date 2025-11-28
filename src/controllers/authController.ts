@@ -61,7 +61,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       return res.error("Email is not verified",[], StatusCodes.FORBIDDEN);
     }
     if(userLogin.password_mismatch === true){
-      return res.error("password_wrong",[],404);
+      return res.error("Wrong password",[],404);
     }
 
     res.clearCookie('refresh_token', {

@@ -119,15 +119,15 @@ export const userManagementDetailsService = async (admin) => {
         as current_month_users
       `),
       knex.raw(`
-        COUNT(
-          CASE WHEN users.role = ? THEN 1 END
-        )::integer as admin_count
+        COUNT(DISTINCT users.id)
+        FILTER (WHERE users.role = ?)::integer
+        as admin_count
       `, [ROLES.ADMIN]),
       knex.raw(`
-        COUNT(
-          CASE WHEN users.role = ? THEN 1 END
-        )::integer as pharmacist_count
-      `, [ROLES.PHARMACIST])
+        COUNT(DISTINCT users.id)
+        FILTER (WHERE users.role = ?)::integer
+        as pharmacist_count
+      `, [ROLES.PHARMACIST]),
     )
     .first();
 

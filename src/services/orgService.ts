@@ -147,7 +147,7 @@ export const managementToolsService = async (admin, params) => {
   search = normaliseSearchText(search);
   const result = await knex("pharmacies")
   .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-  .join('pharmacy_branch_employees', 'pharmacy_branches.id', 'pharmacy_branch_employees.pharmacy_branch_id')
+  .join('pharmacy_branch_employees', 'pharmacy_branches.pharmacy_id', 'pharmacy_branch_employees.pharmacy_id')
   .join('users', 'users.id', 'pharmacy_branch_employees.employee_id')
   .where('pharmacies.id', admin.pharmacy_id)
   .modify((qb) => {

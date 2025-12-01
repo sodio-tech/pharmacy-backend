@@ -199,6 +199,7 @@ export const getUsersService = async (params) => {
   usersList.forEach((user) => {
     user.profile_image = user.profile_image ? s3Service.getFileUrl(user.profile_image) : null;
     user.two_fa_enabled = user.two_factor_recovery_code ? true : false;
+    user.role = ROLES[user.role];
     delete user.two_factor_recovery_code
   })
 

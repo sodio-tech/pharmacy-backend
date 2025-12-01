@@ -1,6 +1,10 @@
 import knex from "../config/database.js";
-import {ContactRequest, DemoRequest} from "../middleware/schemas/types.js";
+import {ContactRequest, DemoRequest, UserLogin} from "../middleware/schemas/types.js";
 import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functions.js";
+import { ROLES } from "../config/constants.js";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcryptjs"
+
 
 export const recordContactRequest = async (data: ContactRequest) => {
   const [res] = await knex("contact_requests").insert(data).returning("*");
@@ -78,3 +82,63 @@ export const demoRequestListService = async (params) => {
     requests
   }
 }
+
+export const signinAdminService = async (loginData: UserLogin) => {
+  try { 
+    const { email, password } = loginData;
+
+    const result: any = {};
+    const user = await knex("users")
+      .where({ email })
+      .first();
+    
+    if (!user) {
+      return { email_not_found: true};
+    }
+    if (user.role !== ROLES.PHARMY_ADMIN) {
+      return { not_admin: true};
+    }
+
+    result.id = user.id;
+    result.email = user.email;
+    result.two_fa_enabled = user.two_factor_recovery_code ? true : false;
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return {password_mismatch: true};
+    } 
+
+    result.role= ROLES[user.role];
+    if (!result.two_fa_enabled) {
+      // Create JWT token with user data
+      const access_token = jwt.sign(
+        { 
+          id: user.id, email: user.email, verified: user.email_verified, 
+          two_fa_enabled: result.two_fa_enabled, role: user.role, 
+        },
+        process.env.JWT_ACCESS_SECRET_KEY!,
+        { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES }  as any
+      );
+
+      const refresh_token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_REFRESH_SECRET_KEY!,
+        { expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES } as any
+      );
+
+      result.access_token = access_token;
+      result.refresh_token = refresh_token
+    }
+
+    await knex('users')
+      .where({ id: user.id })
+      .update({ last_login: new Date() });
+
+    return result;
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    throw new Error("User login failed.");
+  }
+
+};
+

@@ -45,3 +45,44 @@ export const demoRequests = controllerWrapper(async (req, res, next) => {
     return res.error("Failed to get demo request list", error.message, 500);
   }
 });
+
+export const signInAdmin = controllerWrapper(async (req, res, next) => {
+  try {
+    const requestParams = req.body;
+    const userLogin = await adminService.signinAdminService(requestParams);
+    if (userLogin.email_not_found === true) {
+      return res.error("email_not_found",[], StatusCodes.FORBIDDEN);
+    }
+    if(userLogin.password_mismatch === true){
+      return res.error("Wrong password",[],404);
+    }
+    if (userLogin.not_admin === true) {
+      return res.error("not_admin",[],StatusCodes.FORBIDDEN);
+    }
+
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      domain: '.sodio.tech',
+      path: '/',
+    });
+
+    res.cookie('refresh_token', userLogin.refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: '.sodio.tech',
+      path: '/',
+    });
+
+    delete userLogin.refresh_token;
+    return res.success("user_login", userLogin, 200);
+  }
+  catch (error: any) {   
+    return res.error("user_login_failed", error.message, 500);
+  }
+
+});
+

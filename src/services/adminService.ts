@@ -184,6 +184,8 @@ export const getUsersService = async (params) => {
     .groupBy('users.id', 'pharmacies.id')
     .orderByRaw(`${sort_by} ${sort} nulls last`)
     .orderBy("users.created_at", "desc")
+    .limit(limit)
+    .offset(limit * (page - 1));
 
 
   const {total = 0}: any = await users.clone().clearOrder().count('users.id as total').first();

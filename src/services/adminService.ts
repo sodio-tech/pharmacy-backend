@@ -185,8 +185,12 @@ export const getUsersService = async (params) => {
     .orderByRaw(`${sort_by} ${sort} nulls last`)
     .orderBy("users.created_at", "desc")
 
-
-  const {total = 0}: any = await users.clone().clearOrder().count('users.id as total').first();
+  const {total = 0}: any = await users.clone()
+    .clearSelect()
+    .clearOrder()
+    .clearGroup() 
+    .countDistinct('users.id as total') 
+    .first();
 
   const usersList = await users
     .limit(limit)

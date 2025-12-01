@@ -4,6 +4,7 @@ import {buildNormalizedSearch, normaliseSearchText} from "../utils/common_functi
 import { ROLES } from "../config/constants.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
+import * as s3Service from "./s3Service.js";
 
 
 export const recordContactRequest = async (data: ContactRequest) => {
@@ -142,3 +143,66 @@ export const signinAdminService = async (loginData: UserLogin) => {
 
 };
 
+export const getUsersService = async (params) => {
+  let {page, limit, search, sort = 'desc', sort_by} = params;
+  search = normaliseSearchText(search);
+  if (!['asc', 'desc'].includes(sort)) {
+    sort = 'desc';
+  }
+  if (!['fullname', 'email', 'created_at', 'pharmacy_name'].includes(sort_by)) {
+    sort_by = 'created_at';
+  }
+  if (sort_by === 'pharmacy_name') {
+    sort_by = 'pharmacies.pharmacy_name';
+  }
+  else {
+    sort_by = `users.${sort_by}`;
+  }
+
+  const users = knex("users")
+    .leftJoin('pharmacies', 'pharmacies.super_admin', 'users.id')
+    .where('users.role', ROLES.SUPER_ADMIN)
+    .modify((qb) => {
+      if(search) {
+        qb.andWhereRaw(buildNormalizedSearch('users.fullname'), [`%${search}%`])
+          .orWhereRaw(buildNormalizedSearch('users.email'), [`%${search}%`])
+          .orWhereRaw(buildNormalizedSearch('pharmacies.pharmacy_name'), [`%${search}%`])
+      }
+    })
+    .select(
+      'users.id',
+      'pharmacies.id as pharmacy_id',
+      'pharmacies.pharmacy_name',
+      'users.fullname',
+      'users.email',
+      'users.role',
+      'users.two_factor_recovery_code',
+      'users.email_verified',
+      'users.phone_number',
+      'users.profile_image',
+    )
+    .groupBy('users.id', 'pharmacies.id')
+    .orderByRaw(`${sort_by} ${sort} nulls last`)
+    .orderBy("users.created_at", "desc")
+
+
+  const {total = 0}: any = await users.clone().clearOrder().count('users.id as total').first();
+
+  const usersList = await users
+    .limit(limit)
+    .offset(limit * (page - 1));
+
+  usersList.forEach((user) => {
+    user.profile_image = user.profile_image ? s3Service.getFileUrl(user.profile_image) : null;
+    user.two_fa_enabled = user.two_factor_recovery_code ? true : false;
+    delete user.two_factor_recovery_code
+  })
+
+  return {
+    page, 
+    limit, 
+    total_pages: Math.ceil(total / limit),
+    total: Number(total ?? 0),
+    users_list: usersList
+  }
+}

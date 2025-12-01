@@ -21,5 +21,6 @@ router.get('/contact-us/list', verifyPlatformAdmin, adminController.contactReque
 
 router.get('/demo-requests/list', verifyPlatformAdmin, adminController.demoRequests);
 
+router.get('/users-list', verifyPlatformAdmin, adminController.getUsers);
 
 export default router;

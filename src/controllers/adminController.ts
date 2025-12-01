@@ -86,3 +86,15 @@ export const signInAdmin = controllerWrapper(async (req, res, next) => {
 
 });
 
+export const getUsers = controllerWrapper(async (req, res, next) => {
+  try {
+    const params = req.query;
+    params.page = Number(params.page || 1);
+    params.limit = Number(params.limit || 10);
+    const result = await adminService.getUsersService(params);
+    return res.success("users_list", result, 200);
+  } catch (error: any) {
+    return res.error("Failed to get users list", error.message, 500);
+  }
+});
+

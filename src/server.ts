@@ -45,6 +45,14 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(
+  express.json({
+    limit: '5mb',
+    verify: (req: any, res, buf) => {
+      req.rawBodyString = buf.toString();
+    },
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());

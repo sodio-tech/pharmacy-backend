@@ -12,7 +12,7 @@ export interface SaleItem {
   qty: string;
   price: string;
   list_price: number;
-  tax: string;
+  tax: number;
   amount: string;
   hsn?: string;
   batchNo?: string;
@@ -261,8 +261,8 @@ const TableHeader = () => (
     <Text style={[styles.tableHeaderCell, styles.colBatchNo]}>Batch No.</Text>
     <Text style={[styles.tableHeaderCell, styles.colExpiry]}>Expiry</Text>
     <Text style={[styles.tableHeaderCell, styles.colQty]}>Qty</Text>
-    <Text style={[styles.tableHeaderCell, styles.colPrice]}>List Price</Text>
-    <Text style={[styles.tableHeaderCell, styles.colTax]}>Tax %</Text>
+    <Text style={[styles.tableHeaderCell, styles.colPrice]}>SubTotal</Text>
+    <Text style={[styles.tableHeaderCell, styles.colTax]}>Tax (Amt.)</Text>
     <Text style={[styles.tableHeaderCell, styles.colAmount]}>Amount (Rs.)</Text>
   </View>
 );

@@ -468,14 +468,17 @@ export const generateReceiptPDFService = async (user, sale_id: string, branch_id
   const saleItems: pdfService.SaleItem[] = [];
   let srNo = 1;
   for (const sale_item of sale.sale_items) {
+    let list_price = sale_item.product.selling_price * (sale.pack_size ?? 1);
+    const tax = list_price * ( sale_item.gst_rate / 100 )
+    list_price = list_price - tax;
     saleItems.push({
       srNo,
       name: sale_item.product.product_name,
       qty: sale_item.quantity,
       price: sale_item.price,
-      tax: sale_item.gst_rate,
+      tax: tax,
       amount: sale_item.price,
-      list_price: sale_item.product.selling_price * (sale.pack_size ?? 1),
+      list_price: list_price
     })
     srNo++;
   }

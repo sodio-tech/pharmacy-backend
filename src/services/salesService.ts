@@ -477,7 +477,7 @@ export const generateReceiptPDFService = async (user, sale_id: string, branch_id
       price: sale_item.price,
       tax: sale_item.gst_rate,
       amount: sale_item.price,
-      list_price: sale_item.product.selling_price * (sale.pack_size ?? sale_item.product.pack_size ?? 1),
+      list_price: sale_item.product.selling_price * (sale.pack_size ?? 1),
     })
     srNo++;
   }

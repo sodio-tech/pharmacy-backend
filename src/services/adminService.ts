@@ -180,6 +180,7 @@ export const getUsersService = async (params) => {
       'users.email_verified',
       'users.phone_number',
       'users.profile_image',
+      'users.created_at',
     )
     .groupBy('users.id', 'pharmacies.id')
     .orderByRaw(`${sort_by} ${sort} nulls last`)

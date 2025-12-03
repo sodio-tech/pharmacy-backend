@@ -321,8 +321,6 @@ export const getBranchStockService = async (pharmacy_id: number, branch_id: numb
 
   for (const stock of branchStock) {
     stock.image = stock.image && getFileUrl(stock.image);
-    stock.unit_price = Number(stock.unit_price);
-    stock.unit_price = ( (stock.gst_rate/100) * stock.unit_price ) + stock.unit_price;
   }
 
   return { 

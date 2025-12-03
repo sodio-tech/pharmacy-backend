@@ -31,9 +31,7 @@ const SalesService = {
         * (item.pack_size ?? products[product_id]?.pack_size) 
         * products[product_id]?.selling_price
 
-      total_before_tax += price;
-      price = ( products[product_id]?.gst_rate / 100 ) * price + price;
-      cart[product_id]!.price = price;
+      total_before_tax += price - ( products[product_id]?.gst_rate / 100 ) * price;
       cart[product_id]!.gst_rate = products[product_id]?.gst_rate;
 
       return acc + price;

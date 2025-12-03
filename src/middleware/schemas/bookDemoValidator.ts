@@ -10,6 +10,9 @@ export const bookDemoValidator =
     phone_number: z.string()
       .regex(/^\+?[1-9]\d{1,14}$/, 'Contact number must be a valid phone number')
       .refine(val => val.trim().length > 0, 'Contact number cannot be empty'),
+
+    country_code: z.string().optional(),
+    country_name: z.string().optional(),
   })
 
 export type DemoRequest = z.infer<typeof bookDemoValidator>;

@@ -177,12 +177,12 @@ const styles = StyleSheet.create({
 
   colSrNo: { width: "5%" },
   colItems: { width: "22%" },
-  colHSN: { width: "14%" },
+  colHSN: { width: "13%" },
   colBatchNo: { width: "14%" },
   colExpiry: { width: "10%" },
   colQty: { width: "5%" },
   colPrice: { width: "10%" },
-  colTax: { width: "5%", textAlign: "center" },
+  colTax: { width: "6%", textAlign: "center" },
   colAmount: { width: "15%", borderRight: 0 },
 
   totalRow: {

@@ -147,7 +147,7 @@ export const signOutUser = controllerWrapper(async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      ...req.user.role !== ROLES.PHARMY_ADMIN && {domain: '.sodio.tech'},
+      domain: '.sodio.tech',
       path: '/',
     });
 

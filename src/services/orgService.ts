@@ -237,5 +237,16 @@ export const getBranchDetailsService = async (user, branch_id: number) => {
 }
 
 export const getComplianceReportService = async (user) => {
+  const [ licenses ] = await knex("pharmacy_branches")
+    .where("id", user.pharmacy_branch_id)
+    .select(
+      'drug_license_number',
+      'trade_license_number',
+      'fire_certificate_number',
+      'drug_license_expiry',
+      'trade_license_expiry',
+      'fire_certificate_expiry',
+    )
 
+  return {licenses};
 }

@@ -1,6 +1,7 @@
 import controllerWrapper from "../middleware/controllerWrapper.js";
 import * as authService from "../services/authService.js";
 import { StatusCodes } from 'http-status-codes'
+import {ROLES} from "../config/constants.js"
 
 export const signup = controllerWrapper(async (req, res, next) => {
   try {
@@ -141,7 +142,8 @@ export const resetPassword = controllerWrapper(async (req, res, next) => {
 
 export const signOutUser = controllerWrapper(async (req, res, next) => {
   try {
-    res.clearCookie('refresh_token', {
+    const cookieName = req.user.role === ROLES.PHARMY_ADMIN ? 'admin_refresh_token' : 'refresh_token';
+    res.clearCookie(cookieName, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',

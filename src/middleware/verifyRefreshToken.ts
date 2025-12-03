@@ -4,7 +4,7 @@ dotenv.config();
 
 export const verifyRefreshToken = (req, res, next) => {
   try {
-    const refreshToken = req.cookies?.refresh_token;
+    const refreshToken = req.cookies?.refresh_token || res.cookies?.admin_refresh_token;
     
     if (!refreshToken) {
       return res.status(401).json({

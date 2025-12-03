@@ -60,7 +60,7 @@ export const signInAdmin = controllerWrapper(async (req, res, next) => {
       return res.error("not_admin",[],StatusCodes.FORBIDDEN);
     }
 
-    res.clearCookie('refresh_token', {
+    res.clearCookie('admin_refresh_token', {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
@@ -68,7 +68,7 @@ export const signInAdmin = controllerWrapper(async (req, res, next) => {
       path: '/',
     });
 
-    res.cookie('refresh_token', userLogin.refresh_token, {
+    res.cookie('admin_refresh_token', userLogin.refresh_token, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',

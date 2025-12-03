@@ -3,7 +3,7 @@ import * as authController from "../../controllers/authController.js";
 import { validator, signupForm, userLoginSchema, resetPasswordSchema } from "../../middleware/validatorMiddleware.js";
 import { verifyRefreshToken } from "../../middleware/verifyRefreshToken.js";
 import {verifyAccessToken} from "../../middleware/verifyAccessToken.js";
-import { verifyAdminRefreshToken } from '@/middleware/verifyAdminRefreshToken.js';
+import { verifyAdminRefreshToken } from '../../middleware/verifyAdminRefreshToken.js';
 
 const router = Router();
 

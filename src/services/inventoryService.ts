@@ -8,9 +8,10 @@ export const inventoryGeneralAnalyticsService = async (pharmacy_id: number, bran
     .leftJoin('branch_product_settings', 'branch_product_settings.product_id', 'batches.product_id')
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
+    .andWhere('products.is_active', true)
     .select(
       knex.raw(`COUNT(DISTINCT CASE WHEN batches.is_active = true AND products.is_active = true THEN products.id END)::integer as active_products`),
-      knex.raw(`SUM(batches.available_stock)::integer as total_products`),
+      knex.raw(`(COALESCE(SUM(batches.available_stock), 0))::integer as total_products`),
       knex.raw(`
         COUNT(
           CASE WHEN batches.available_stock <= COALESCE(branch_product_settings.min_stock, products.min_stock)
@@ -54,6 +55,7 @@ export const getStockAlertsService = async (pharmacy_id: number, branch_id: numb
     .leftJoin('branch_product_settings', 'branch_product_settings.product_id', 'batches.product_id')
     .leftJoin('products', 'products.id', 'batches.product_id')
     .where('batches.pharmacy_branch_id', branch_id)
+    .andWhere('products.is_active', true)
     .modify((qb) => {
       if(search) {
         qb.andWhere( builder => 

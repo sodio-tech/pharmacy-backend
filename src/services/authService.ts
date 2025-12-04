@@ -201,13 +201,22 @@ export const signInUserService = async (loginData: UserLogin) => {
         }
         else {
           const pharmacy = await knex("pharmacies")
-            .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
-            .leftJoin('pharmacy_branch_employees', 'pharmacy_branch_employees.pharmacy_branch_id', 'pharmacy_branches.id')
+            .leftJoin('pharmacy_branch_employees', 'pharmacy_branch_employees.pharmacy_id', 'pharmacies.id')
             .where('pharmacy_branch_employees.employee_id', user.id)
-            .select("pharmacies.id as pharmacy_id", "pharmacy_branches.id as pharmacy_branch_id")
+            .select("pharmacies.id as pharmacy_id", "pharmacy_branch_employees.pharmacy_branch_id as pharmacy_branch_id")
             .first();
+
           pharmacy_id = pharmacy?.pharmacy_id;
           pharmacy_branch_id = pharmacy?.pharmacy_branch_id;
+
+          if (!pharmacy_branch_id) {
+            const branch =  await knex('pharmacies')
+              .leftJoin('pharmacy_branches', 'pharmacies.id', 'pharmacy_branches.pharmacy_id')
+              .where('pharmacies.id', pharmacy_id)
+              .select("pharmacy_branches.id as pharmacy_branch_id")
+              .first()
+            pharmacy_branch_id = branch.pharmacy_branch_id;
+          }
         }
 
         await knex('users')

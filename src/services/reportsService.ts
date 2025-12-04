@@ -3,6 +3,29 @@ import {} from "../middleware/schemas/types.js";
 import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
 import * as s3Service from './s3Service.js'
 
+function getPreviousWeekDays() {
+  const today = new Date();
+
+  const day = today.getDay();           
+  const thisWeekMonday = new Date(today);
+  
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  thisWeekMonday.setDate(today.getDate() + diffToMonday);
+
+  const prevWeekMonday = new Date(thisWeekMonday);
+  prevWeekMonday.setDate(prevWeekMonday.getDate() - 7);
+
+  const result: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(prevWeekMonday);
+    d.setDate(prevWeekMonday.getDate() + i);
+    result.push(d);
+  }
+
+  return result;
+}
+
+
 export const getSalesTrendService = async (user, params: any, branch_id: number) => {
   const { timeframe } = params;
   const baseQuery = knex('sales')
@@ -22,8 +45,9 @@ export const getSalesTrendService = async (user, params: any, branch_id: number)
         .groupByRaw(`EXTRACT(DOW FROM created_at)`)
         .orderBy('day_of_week', 'asc')
 
+      const previousWeekDays = getPreviousWeekDays();
       const data = Object.fromEntries(
-        Array.from(Array(7).keys()).map(i => [i + 1, {total_sales: 0, total_amount: 0}])
+        Array.from(Array(7).keys()).map(i => [i + 1, {total_sales: 0, total_amount: 0, date: previousWeekDays[i]}])
       )
       for (const row of res) {
         const index = row.day_of_week === 0 ? 7 : row.day_of_week;

@@ -81,6 +81,13 @@ npm run migrate:status
 # List all migrations
 npm run migrate:list
 ```
+
+## REPL
+```bash
+# If you use the REPL heavily like Haskellers or Lisp-ers, do this:
+NODE_PATH=$(npm root) node
+```
+
 ## Project Structure
 ```
 .

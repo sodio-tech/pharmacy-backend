@@ -27,7 +27,7 @@ export const verifyAdminRefreshToken = (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: '.sodio.tech',
+      domain: '.one',
       path: '/',
     });
     

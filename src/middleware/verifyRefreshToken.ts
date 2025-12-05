@@ -21,14 +21,12 @@ export const verifyRefreshToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    const isAdmin = req.cookies?.admin_refresh_token;
     console.error("Refresh token verification error:", error);
     
-    res.clearCookie(isAdmin ? 'admin_refresh_token' : 'refresh_token', {
+    res.clearCookie('refresh_token', {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      ...!isAdmin && {domain: '.sodio.tech'},
       path: '/',
     });
     

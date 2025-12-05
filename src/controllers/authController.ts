@@ -2,6 +2,7 @@ import controllerWrapper from "../middleware/controllerWrapper.js";
 import * as authService from "../services/authService.js";
 import { StatusCodes } from 'http-status-codes'
 import {ROLES} from "../config/constants.js"
+import jwt from "jsonwebtoken";
 
 export const signup = controllerWrapper(async (req, res, next) => {
   try {
@@ -28,8 +29,13 @@ export const verifyAccount = controllerWrapper(async (req, res, next) => {
 
     return res.success("email_verified", result, 200);
   } catch (err) {
-    console.log(err)
-    return res.error("invalid_token", [], 400);
+    if (err instanceof jwt.JsonWebTokenError) { 
+      return res.error("Invalid verification link, please try again", [], 400);
+    }
+    if (err instanceof jwt.TokenExpiredError) { 
+      return res.error("Verification link expired, please try again", [], 400);
+    }
+    return res.error("Invalid verification link", [], 400);
   }
 });
 

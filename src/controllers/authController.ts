@@ -30,7 +30,7 @@ export const verifyAccount = controllerWrapper(async (req, res, next) => {
     return res.success("email_verified", result, 200);
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) { 
-      return res.error("Invalid verification link, please try again", [], 400);
+      return res.error("Malformed verification link, please try again", [], 400);
     }
     if (err instanceof jwt.TokenExpiredError) { 
       return res.error("Verification link expired, please try again", [], 400);

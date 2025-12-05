@@ -28,8 +28,8 @@ app.use(helmet());
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://pharmy.sodio.tech",
-  "https://pharmyadmin.sodio.tech"
+  "https://pharmy.one",
+  "https://admin.pharmy.one"
 ];
 
 app.use(cors({

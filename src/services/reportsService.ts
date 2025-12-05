@@ -35,8 +35,8 @@ export const getSalesTrendService = async (user, params: any, branch_id: number)
   const trends = {
     'daily': async () => {
       const res = await baseQuery
-        .andWhereRaw(`created_at >= CURRENT_DATE - INTERVAL '7 days'`)
-        .andWhereRaw(`created_at < CURRENT_DATE`)
+        .andWhereRaw(`date_trunc('week', created_at) = date_trunc('week', CURRENT_DATE - INTERVAL '7 days')`)
+        .andWhereRaw(`date_trunc('week', created_at) != date_trunc('week', CURRENT_DATE)`)
         .select(
           knex.raw(`EXTRACT(DOW FROM created_at) as day_of_week`),
           knex.raw(`COUNT(*)::integer as total_sales`),

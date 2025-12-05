@@ -75,6 +75,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      domain: '.sodio.tech',
       path: '/',
     });
 
@@ -83,6 +84,7 @@ export const signInUser = controllerWrapper(async (req, res, next) => {
       secure: true,
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: '.sodio.tech',
       path: '/',
     });
 
@@ -151,6 +153,7 @@ export const signOutUser = controllerWrapper(async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      domain: '.sodio.tech',
       path: '/',
     });
 

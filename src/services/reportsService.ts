@@ -3,23 +3,17 @@ import {} from "../middleware/schemas/types.js";
 import {normaliseSearchText, buildNormalizedSearch} from "../utils/common_functions.js";
 import * as s3Service from './s3Service.js'
 
-function getPreviousWeekDays() {
+function getPastSevenDays() {
   const today = new Date();
+  const result: string[] = [];
 
-  const day = today.getDay();           
-  const thisWeekMonday = new Date(today);
-  
-  const diffToMonday = (day === 0 ? -6 : 1 - day);
-  thisWeekMonday.setDate(today.getDate() + diffToMonday);
+  const start = new Date(today);
+  start.setDate(today.getDate() - 6);
 
-  const prevWeekMonday = new Date(thisWeekMonday);
-  prevWeekMonday.setDate(prevWeekMonday.getDate() - 7);
-
-  const result: Date[] = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(prevWeekMonday);
-    d.setDate(prevWeekMonday.getDate() + i);
-    result.push(d);
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    result.push(d.toISOString().split('T')[0] as string);
   }
 
   return result;
@@ -34,26 +28,34 @@ export const getSalesTrendService = async (user, params: any, branch_id: number)
 
   const trends = {
     'daily': async () => {
-      const res = await baseQuery
-        .andWhereRaw(`date_trunc('week', created_at) = date_trunc('week', CURRENT_DATE - INTERVAL '7 days')`)
-        .andWhereRaw(`date_trunc('week', created_at) != date_trunc('week', CURRENT_DATE)`)
+      const res = await knex
+        .with('past_seven_days', (qb) => {
+          qb.select(knex.raw(`
+            generate_series(
+              current_date - interval '6 days',
+              current_date,
+              '1 day'::interval
+            )::date as date
+         `))
+        })
         .select(
-          knex.raw(`EXTRACT(DOW FROM created_at) as day_of_week`),
-          knex.raw(`COUNT(*)::integer as total_sales`),
-          knex.raw(`SUM(total_amount)::float as total_amount`),
+          knex.raw(`past_seven_days.date as date`),
+          knex.raw(`COALESCE(COUNT(sales.id), 0)::integer as total_sales`),
+          knex.raw(`COALESCE(SUM(sales.total_amount), 0)::float as total_amount`),
         )
-        .groupByRaw(`EXTRACT(DOW FROM created_at)`)
-        .orderBy('day_of_week', 'asc')
+        .from('past_seven_days')
+        .leftJoin('sales', function () {
+          this.on(knex.raw('sales.created_at::date = past_seven_days.date'))
+            .andOn('sales.pharmacy_branch_id', '=', knex.raw('?', [branch_id]))
+            .andOn('sales.status', '=', knex.raw('?', ['paid']))
+        }) 
+        .groupByRaw(`past_seven_days.date`)
+        .orderBy('date', 'asc')
 
-      const previousWeekDays = getPreviousWeekDays();
-      const data = Object.fromEntries(
-        Array.from(Array(7).keys()).map(i => [i + 1, {total_sales: 0, total_amount: 0, date: previousWeekDays[i]}])
+      let data = Object.fromEntries(
+        Array.from(Array(7).keys()).map(i => [i + 1, res[i]])
       )
-      for (const row of res) {
-        const index = row.day_of_week === 0 ? 7 : row.day_of_week;
-        data[index]!.total_sales = row.total_sales;
-        data[index]!.total_amount = row.total_amount;
-      }
+
       return data;
     },
     'weekly': async () => {
